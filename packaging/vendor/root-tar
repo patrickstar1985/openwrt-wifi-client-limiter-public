@@ -1,0 +1,4 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+# Normalize ownership without requiring root or fakeroot on the build host.
+exec "${OPENWRT_PACKAGE_TAR_BIN:-tar}" --owner=0 --group=0 "$@"

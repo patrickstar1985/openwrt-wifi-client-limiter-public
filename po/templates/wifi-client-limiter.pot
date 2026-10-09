@@ -1,0 +1,316 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "WiFi Client Limiter"
+msgstr ""
+
+msgid "Global limit across selected WiFi networks. Protected devices are excluded from client limits and Internet restrictions. A reconnect cooldown can delay new connections after a disconnect."
+msgstr ""
+
+msgid "Settings"
+msgstr ""
+
+msgid "Enabled"
+msgstr ""
+
+msgid "Test mode"
+msgstr ""
+
+msgid "Log actions only. Do not disconnect devices or change Internet access."
+msgstr ""
+
+msgid "Maximum number of guests"
+msgstr ""
+
+msgid "0 = unlimited. Disconnect only when the limit is exceeded."
+msgstr ""
+
+msgid "Maximum connection duration (seconds)"
+msgstr ""
+
+msgid "0 = unlimited. 1800 = 30 minutes."
+msgstr ""
+
+msgid "Check interval (seconds)"
+msgstr ""
+
+msgid "WiFi networks to manage"
+msgstr ""
+
+msgid "Select the WiFi networks on which client limits should apply. Protected devices are excluded. No action is taken if no network is selected."
+msgstr ""
+
+msgid "Protected MAC addresses"
+msgstr ""
+
+msgid "Add administrator devices, servers and other permanent devices here. Check for private MAC addresses."
+msgstr ""
+
+msgid "Setup wizard"
+msgstr ""
+
+msgid "Start setup wizard"
+msgstr ""
+
+msgid "Select WiFi networks to manage"
+msgstr ""
+
+msgid "Choose the WiFi networks on which client limits should apply. The wizard does not change WiFi configuration."
+msgstr ""
+
+msgid "Select at least one access point."
+msgstr ""
+
+msgid "No access points are configured. Create a WiFi network in Network / Wireless first."
+msgstr ""
+
+msgid "Protect important devices"
+msgstr ""
+
+msgid "Select the connected WiFi devices that must never be disconnected. You can also enter MAC addresses manually."
+msgstr ""
+
+msgid "Connected WiFi devices"
+msgstr ""
+
+msgid "No connected devices were found. Add protected MAC addresses manually if needed."
+msgstr ""
+
+msgid "Device discovery is unavailable. Add protected MAC addresses manually."
+msgstr ""
+
+msgid "Refresh devices"
+msgstr ""
+
+msgid "Manual MAC addresses"
+msgstr ""
+
+msgid "Limits"
+msgstr ""
+
+msgid "Review setup"
+msgstr ""
+
+msgid "Save setup and apply"
+msgstr ""
+
+msgid "Unable to save setup."
+msgstr ""
+
+msgid "Back"
+msgstr ""
+
+msgid "Next"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Pending changes in other settings were found. Apply or discard them before saving this setup."
+msgstr ""
+
+msgid "Pending changes to this limiter were found. Apply or discard them before starting the wizard."
+msgstr ""
+
+msgid "No changes have been saved yet."
+msgstr ""
+
+msgid "Reconnect cooldown (seconds)"
+msgstr ""
+
+msgid "0 = no pause. After a disconnect, block automatic and manual reconnections on all selected WiFi networks for this duration."
+msgstr ""
+
+msgid "Reconnect protection window (seconds)"
+msgstr ""
+
+msgid "0 = disabled. For this long after a disconnect, returning devices may rejoin only if guest slots are free and the reconnect cooldown has ended."
+msgstr ""
+
+msgid "Allow guests to access the Internet"
+msgstr ""
+
+msgid "When disabled, guests can reach the local WiFi network only. Protected devices keep their existing Internet access. Test mode logs the policy without applying it."
+msgstr ""
+
+msgid "Internet policy status"
+msgstr ""
+
+msgid "Guests may access the Internet under the existing firewall policy."
+msgstr ""
+
+msgid "Internet access is blocked for guests. Protected devices keep their existing Internet access."
+msgstr ""
+
+msgid "Test mode. The Internet policy is logged without applying it."
+msgstr ""
+
+msgid "The Internet policy is inactive."
+msgstr ""
+
+msgid "The Internet policy could not be applied. Check the system log."
+msgstr ""
+
+msgid "Internet policy status is unavailable."
+msgstr ""
+
+msgid "Allowed"
+msgstr ""
+
+msgid "Blocked"
+msgstr ""
+
+msgid "Connected devices"
+msgstr ""
+
+msgid "Device"
+msgstr ""
+
+msgid "MAC address"
+msgstr ""
+
+msgid "WiFi network"
+msgstr ""
+
+msgid "Internet policy"
+msgstr ""
+
+msgid "Refresh status"
+msgstr ""
+
+msgid "Device names may be unavailable. Permissions describe the limiter policy, not whether the Internet is reachable. Unsaved settings are not included."
+msgstr ""
+
+msgid "No connected WiFi devices were found."
+msgstr ""
+
+msgid "Connected device information is unavailable."
+msgstr ""
+
+msgid "Some WiFi devices could not be queried. The list may be incomplete."
+msgstr ""
+
+msgid "Unknown device"
+msgstr ""
+
+msgid "Allowed under existing firewall policy"
+msgstr ""
+
+msgid "Blocked (local network only)"
+msgstr ""
+
+msgid "Protected device (existing firewall policy)"
+msgstr ""
+
+msgid "Not managed by this limiter"
+msgstr ""
+
+msgid "Test mode (not enforced)"
+msgstr ""
+
+msgid "Not enforced"
+msgstr ""
+
+msgid "Unknown"
+msgstr ""
+
+msgid "The limiter service is not running. Internet restrictions could not be verified."
+msgstr ""
+
+msgid "The limiter service is starting. Internet restrictions have not been verified yet."
+msgstr ""
+
+msgid "The limiter service reported an error. Internet restrictions could not be verified."
+msgstr ""
+
+msgid "Diagnostic code"
+msgstr ""
+
+msgid "Diagnostic details"
+msgstr ""
+
+msgid "nftables is missing."
+msgstr ""
+
+msgid "The native OpenWrt firewall backend is unavailable."
+msgstr ""
+
+msgid "A required limiter component is missing."
+msgstr ""
+
+msgid "The MTK WiFi driver could not be read."
+msgstr ""
+
+msgid "This MTK WiFi driver is not supported."
+msgstr ""
+
+msgid "This MTK WiFi profile is not supported."
+msgstr ""
+
+msgid "MultiAP steering conflicts with reconnect protection."
+msgstr ""
+
+msgid "Required MTK WiFi tools or kernel log access are unavailable."
+msgstr ""
+
+msgid "The saved limiter configuration is invalid."
+msgstr ""
+
+msgid "The WiFi driver check failed."
+msgstr ""
+
+msgid "Another limiter worker is already running."
+msgstr ""
+
+msgid "Previous limiter rules could not be fully removed."
+msgstr ""
+
+msgid "The Internet rules could not be verified."
+msgstr ""
+
+msgid "The active Internet rules do not match the saved settings."
+msgstr ""
+
+msgid "Traffic acceleration could not be verified as disabled. Internet restrictions cannot be verified."
+msgstr ""
+
+msgid "WiFi network status is unavailable."
+msgstr ""
+
+msgid "None of the selected WiFi networks are active."
+msgstr ""
+
+msgid "No WiFi network is selected."
+msgstr ""
+
+msgid "Protect device"
+msgstr ""
+
+msgid "Protection pending"
+msgstr ""
+
+msgid "Already protected"
+msgstr ""
+
+msgid "Protection"
+msgstr ""
+
+msgid "Device added to protected MAC addresses. Save & Apply to activate the exception."
+msgstr ""
+
+msgid "Unable to update protected MAC addresses."
+msgstr ""
+
+msgid "Operating mode"
+msgstr ""
+
+msgid "Live mode"
+msgstr ""
+
+msgid "Choose whether to test the settings or enforce them after applying."
+msgstr ""
+
+msgid "Test mode only logs actions. Live mode enforces client limits, reconnect pauses and the selected Internet policy."
+msgstr ""

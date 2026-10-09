@@ -1,0 +1,6 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+# Also runs at first boot when a package was included in an offline image.
+[ -z "${IPKG_INSTROOT:-}" ] || exit 0
+[ -x /usr/share/wifi-client-limiter/package-hooks ] || exit 1
+/usr/share/wifi-client-limiter/package-hooks languages

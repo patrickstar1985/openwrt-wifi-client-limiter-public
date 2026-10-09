@@ -1,0 +1,317 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ru\n"
+
+msgid "WiFi Client Limiter"
+msgstr "Ограничитель клиентов Wi-Fi"
+
+msgid "Global limit across selected WiFi networks. Protected devices are excluded from client limits and Internet restrictions. A reconnect cooldown can delay new connections after a disconnect."
+msgstr "Общий лимит для выбранных сетей WiFi. Защищённые устройства исключены из ограничений для клиентов и доступа в Интернет. Пауза после отключения может задержать новые подключения."
+
+msgid "Settings"
+msgstr "Настройки"
+
+msgid "Enabled"
+msgstr "Включено"
+
+msgid "Test mode"
+msgstr "Тестовый режим"
+
+msgid "Log actions only. Do not disconnect devices or change Internet access."
+msgstr "Только записывать действия в журнал. Не отключать устройства и не изменять доступ в Интернет."
+
+msgid "Maximum number of guests"
+msgstr "Максимальное число гостевых устройств"
+
+msgid "0 = unlimited. Disconnect only when the limit is exceeded."
+msgstr "0 = без ограничений. Устройства отключаются только при превышении лимита."
+
+msgid "Maximum connection duration (seconds)"
+msgstr "Максимальная длительность подключения (секунды)"
+
+msgid "0 = unlimited. 1800 = 30 minutes."
+msgstr "0 = без ограничений. 1800 = 30 минут."
+
+msgid "Check interval (seconds)"
+msgstr "Интервал проверки (секунды)"
+
+msgid "WiFi networks to manage"
+msgstr "Управляемые сети Wi-Fi"
+
+msgid "Select the WiFi networks on which client limits should apply. Protected devices are excluded. No action is taken if no network is selected."
+msgstr "Выберите сети Wi-Fi, в которых должны действовать ограничения для клиентов. Ограничения не распространяются на защищённые устройства. Если ни одна сеть не выбрана, никакие действия не выполняются."
+
+msgid "Protected MAC addresses"
+msgstr "Защищённые MAC-адреса"
+
+msgid "Add administrator devices, servers and other permanent devices here. Check for private MAC addresses."
+msgstr "Добавьте сюда устройства администраторов, серверы и другие постоянно подключённые устройства. Проверьте, используют ли устройства приватные MAC-адреса."
+
+msgid "Setup wizard"
+msgstr "Мастер настройки"
+
+msgid "Start setup wizard"
+msgstr "Запустить мастер настройки"
+
+msgid "Select WiFi networks to manage"
+msgstr "Выберите управляемые сети Wi-Fi"
+
+msgid "Choose the WiFi networks on which client limits should apply. The wizard does not change WiFi configuration."
+msgstr "Выберите сети Wi-Fi, в которых должны действовать ограничения для клиентов. Мастер не изменяет конфигурацию Wi-Fi."
+
+msgid "Select at least one access point."
+msgstr "Выберите хотя бы одну точку доступа."
+
+msgid "No access points are configured. Create a WiFi network in Network / Wireless first."
+msgstr "Точки доступа не настроены. Сначала создайте сеть Wi-Fi в разделе «Сеть / Беспроводная сеть»."
+
+msgid "Protect important devices"
+msgstr "Защитите важные устройства"
+
+msgid "Select the connected WiFi devices that must never be disconnected. You can also enter MAC addresses manually."
+msgstr "Выберите подключённые устройства Wi-Fi, которые нельзя отключать. Также можно ввести MAC-адреса вручную."
+
+msgid "Connected WiFi devices"
+msgstr "Подключённые устройства Wi-Fi"
+
+msgid "No connected devices were found. Add protected MAC addresses manually if needed."
+msgstr "Подключённые устройства не найдены. При необходимости добавьте защищённые MAC-адреса вручную."
+
+msgid "Device discovery is unavailable. Add protected MAC addresses manually."
+msgstr "Обнаружение устройств недоступно. Добавьте защищённые MAC-адреса вручную."
+
+msgid "Refresh devices"
+msgstr "Обновить список устройств"
+
+msgid "Manual MAC addresses"
+msgstr "MAC-адреса, введённые вручную"
+
+msgid "Limits"
+msgstr "Лимиты"
+
+msgid "Review setup"
+msgstr "Проверьте настройки"
+
+msgid "Save setup and apply"
+msgstr "Сохранить и применить настройки"
+
+msgid "Unable to save setup."
+msgstr "Не удалось сохранить настройки."
+
+msgid "Back"
+msgstr "Назад"
+
+msgid "Next"
+msgstr "Далее"
+
+msgid "Cancel"
+msgstr "Отмена"
+
+msgid "Pending changes in other settings were found. Apply or discard them before saving this setup."
+msgstr "Обнаружены неприменённые изменения других настроек. Примените или отмените их перед сохранением этой конфигурации."
+
+msgid "Pending changes to this limiter were found. Apply or discard them before starting the wizard."
+msgstr "Обнаружены неприменённые изменения настроек этого ограничителя. Примените или отмените их перед запуском мастера."
+
+msgid "No changes have been saved yet."
+msgstr "Изменения ещё не сохранены."
+
+msgid "Reconnect cooldown (seconds)"
+msgstr "Пауза перед повторным подключением (секунды)"
+
+msgid "0 = no pause. After a disconnect, block automatic and manual reconnections on all selected WiFi networks for this duration."
+msgstr "0 = без паузы. После отключения автоматическое и ручное повторное подключение устройства ко всем выбранным сетям Wi-Fi блокируется на указанный срок."
+
+msgid "Reconnect protection window (seconds)"
+msgstr "Период защиты от повторного подключения (секунды)"
+
+msgid "0 = disabled. For this long after a disconnect, returning devices may rejoin only if guest slots are free and the reconnect cooldown has ended."
+msgstr "0 = отключено. В течение указанного времени после отключения устройство может подключиться снова только при наличии свободных мест для гостевых устройств и после окончания паузы перед повторным подключением."
+
+msgid "Allow guests to access the Internet"
+msgstr "Разрешить гостям доступ в Интернет"
+
+msgid "When disabled, guests can reach the local WiFi network only. Protected devices keep their existing Internet access. Test mode logs the policy without applying it."
+msgstr "Если параметр отключён, гости могут обращаться только к локальной сети WiFi. Защищённые устройства сохраняют имеющийся доступ в Интернет. В тестовом режиме политика записывается в журнал, но не применяется."
+
+msgid "Internet policy status"
+msgstr "Состояние политики доступа в Интернет"
+
+msgid "Guests may access the Internet under the existing firewall policy."
+msgstr "Гости могут обращаться к Интернету в соответствии с действующей политикой межсетевого экрана."
+
+msgid "Internet access is blocked for guests. Protected devices keep their existing Internet access."
+msgstr "Доступ в Интернет для гостей заблокирован. Защищённые устройства сохраняют имеющийся доступ в Интернет."
+
+msgid "Test mode. The Internet policy is logged without applying it."
+msgstr "Тестовый режим. Политика доступа в Интернет записывается в журнал, но не применяется."
+
+msgid "The Internet policy is inactive."
+msgstr "Политика доступа в Интернет неактивна."
+
+msgid "The Internet policy could not be applied. Check the system log."
+msgstr "Не удалось применить политику доступа в Интернет. Проверьте системный журнал."
+
+msgid "Internet policy status is unavailable."
+msgstr "Состояние политики доступа в Интернет недоступно."
+
+msgid "Allowed"
+msgstr "Разрешён"
+
+msgid "Blocked"
+msgstr "Заблокирован"
+
+msgid "Connected devices"
+msgstr "Подключённые устройства"
+
+msgid "Device"
+msgstr "Устройство"
+
+msgid "MAC address"
+msgstr "MAC-адрес"
+
+msgid "WiFi network"
+msgstr "Сеть WiFi"
+
+msgid "Internet policy"
+msgstr "Политика доступа в Интернет"
+
+msgid "Refresh status"
+msgstr "Обновить статус"
+
+msgid "Device names may be unavailable. Permissions describe the limiter policy, not whether the Internet is reachable. Unsaved settings are not included."
+msgstr "Имена устройств могут быть недоступны. Разрешения отражают политику ограничителя, а не фактическую доступность Интернета. Несохранённые настройки не учитываются."
+
+msgid "No connected WiFi devices were found."
+msgstr "Подключённые устройства WiFi не найдены."
+
+msgid "Connected device information is unavailable."
+msgstr "Информация о подключённых устройствах недоступна."
+
+msgid "Some WiFi devices could not be queried. The list may be incomplete."
+msgstr "Не удалось опросить некоторые устройства WiFi. Список может быть неполным."
+
+msgid "Unknown device"
+msgstr "Неизвестное устройство"
+
+msgid "Allowed under existing firewall policy"
+msgstr "Разрешён согласно действующей политике межсетевого экрана"
+
+msgid "Blocked (local network only)"
+msgstr "Заблокирован (только локальная сеть)"
+
+msgid "Protected device (existing firewall policy)"
+msgstr "Защищённое устройство (действующая политика межсетевого экрана)"
+
+msgid "Not managed by this limiter"
+msgstr "Не управляется этим ограничителем"
+
+msgid "Test mode (not enforced)"
+msgstr "Тестовый режим (не применяется)"
+
+msgid "Not enforced"
+msgstr "Не применяется"
+
+msgid "Unknown"
+msgstr "Неизвестно"
+
+msgid "The limiter service is not running. Internet restrictions could not be verified."
+msgstr "Служба ограничителя не запущена. Не удалось проверить ограничения доступа в Интернет."
+
+msgid "The limiter service is starting. Internet restrictions have not been verified yet."
+msgstr "Служба ограничителя запускается. Ограничения доступа в Интернет ещё не проверены."
+
+msgid "The limiter service reported an error. Internet restrictions could not be verified."
+msgstr "Служба ограничителя сообщила об ошибке. Не удалось проверить ограничения доступа в Интернет."
+
+msgid "Diagnostic code"
+msgstr "Код диагностики"
+
+msgid "Diagnostic details"
+msgstr "Подробности диагностики"
+
+msgid "nftables is missing."
+msgstr "nftables отсутствует."
+
+msgid "The native OpenWrt firewall backend is unavailable."
+msgstr "Штатная подсистема межсетевого экрана OpenWrt недоступна."
+
+msgid "A required limiter component is missing."
+msgstr "Отсутствует необходимый компонент ограничителя."
+
+msgid "The MTK WiFi driver could not be read."
+msgstr "Не удалось прочитать драйвер MTK WiFi."
+
+msgid "This MTK WiFi driver is not supported."
+msgstr "Этот драйвер MTK WiFi не поддерживается."
+
+msgid "This MTK WiFi profile is not supported."
+msgstr "Этот профиль MTK WiFi не поддерживается."
+
+msgid "MultiAP steering conflicts with reconnect protection."
+msgstr "Управление подключениями MultiAP конфликтует с защитой от повторного подключения."
+
+msgid "Required MTK WiFi tools or kernel log access are unavailable."
+msgstr "Необходимые инструменты MTK WiFi или доступ к журналу ядра недоступны."
+
+msgid "The saved limiter configuration is invalid."
+msgstr "Сохранённая конфигурация ограничителя недействительна."
+
+msgid "The WiFi driver check failed."
+msgstr "Проверка драйвера WiFi завершилась с ошибкой."
+
+msgid "Another limiter worker is already running."
+msgstr "Другой рабочий процесс ограничителя уже запущен."
+
+msgid "Previous limiter rules could not be fully removed."
+msgstr "Не удалось полностью удалить предыдущие правила ограничителя."
+
+msgid "The Internet rules could not be verified."
+msgstr "Не удалось проверить правила доступа в Интернет."
+
+msgid "The active Internet rules do not match the saved settings."
+msgstr "Действующие правила доступа в Интернет не соответствуют сохранённым настройкам."
+
+msgid "Traffic acceleration could not be verified as disabled. Internet restrictions cannot be verified."
+msgstr "Не удалось подтвердить, что ускорение трафика отключено. Невозможно проверить ограничения доступа в Интернет."
+
+msgid "WiFi network status is unavailable."
+msgstr "Состояние сетей WiFi недоступно."
+
+msgid "None of the selected WiFi networks are active."
+msgstr "Ни одна из выбранных сетей WiFi не активна."
+
+msgid "No WiFi network is selected."
+msgstr "Сеть WiFi не выбрана."
+
+msgid "Protect device"
+msgstr "Защитить устройство"
+
+msgid "Protection pending"
+msgstr "Защита ожидает применения"
+
+msgid "Already protected"
+msgstr "Уже защищено"
+
+msgid "Protection"
+msgstr "Защита"
+
+msgid "Device added to protected MAC addresses. Save & Apply to activate the exception."
+msgstr "Устройство добавлено в список защищённых MAC-адресов. Нажмите «Сохранить и применить», чтобы активировать исключение."
+
+msgid "Unable to update protected MAC addresses."
+msgstr "Не удалось обновить список защищённых MAC-адресов."
+
+msgid "Operating mode"
+msgstr "Режим работы"
+
+msgid "Live mode"
+msgstr "Рабочий режим"
+
+msgid "Choose whether to test the settings or enforce them after applying."
+msgstr "Выберите, следует ли после применения настроек тестировать их или задействовать ограничения."
+
+msgid "Test mode only logs actions. Live mode enforces client limits, reconnect pauses and the selected Internet policy."
+msgstr "Тестовый режим только записывает действия в журнал. В рабочем режиме действуют ограничения клиентов, паузы перед повторным подключением и выбранная политика доступа в Интернет."

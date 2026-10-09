@@ -1,0 +1,119 @@
+name: Check and build installation packages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: packages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Verify release package checksums
+        working-directory: packages/0.5.10
+        run: sha256sum --check --strict SHA256SUMS
+      - name: Install native helper validation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y binutils-aarch64-linux-gnu python3-unicorn qemu-user
+      - name: Verify query-only helper instructions and reproducible AArch64 binary
+        run: /usr/bin/python3 helper/test-mtk-acl-query.py --require-emulation --binutils-prefix aarch64-linux-gnu- --qemu qemu-aarch64
+      - name: Validate translations, wizard, worker and package lifecycle
+        run: |
+          python3 test.py
+          python3 packaging/test-packages.py
+
+  native-firewall:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Install native packet test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y nftables iproute2 conntrack
+      - name: Verify fw4 and fw3 netdev ingress, IPv4, IPv6, VLAN/QinQ and software-offloaded packets
+        run: sudo python3 test-internet-nft.py --require
+
+  packages:
+    needs: [checks, native-firewall]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - release: 24.10.6
+            format: ipk
+            sdk: openwrt-sdk-24.10.6-x86-64_gcc-13.3.0_musl.Linux-x86_64.tar.zst
+            sha256: 9e398ea7efc098e4a986f97efff595e32d08c615fe356bcb3d885d7ad3a39ac0
+          - release: 25.12.4
+            format: apk
+            sdk: openwrt-sdk-25.12.4-x86-64_gcc-14.3.0_musl.Linux-x86_64.tar.zst
+            sha256: 28e004c1be4d215d19c1f12a6aa4c8d8f80689549eb707d0ff5a71f16fa8d05f
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Install SDK host dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential fakeroot flex bison gawk gettext git libncurses-dev libssl-dev python3 python3-setuptools rsync swig unzip zlib1g-dev file wget zstd
+      - name: Download and verify pinned official OpenWrt SDK
+        env:
+          SDK_FILE: ${{ matrix.sdk }}
+          SDK_SHA256: ${{ matrix.sha256 }}
+          OPENWRT_RELEASE: ${{ matrix.release }}
+        run: |
+          curl --http1.1 --fail --location --retry 3 --retry-all-errors --output "$RUNNER_TEMP/sdk.tar.zst" "https://downloads.openwrt.org/releases/$OPENWRT_RELEASE/targets/x86/64/$SDK_FILE"
+          printf '%s  %s\n' "$SDK_SHA256" "$RUNNER_TEMP/sdk.tar.zst" | sha256sum --check --strict
+          mkdir -p "$RUNNER_TEMP/openwrt-sdk"
+          tar --zstd -xf "$RUNNER_TEMP/sdk.tar.zst" -C "$RUNNER_TEMP/openwrt-sdk" --strip-components=1
+      - name: Verify release APK signature and native package lifecycle
+        if: matrix.format == 'apk'
+        run: |
+          set -eu
+          . ./packaging/package.env
+          apk_tool="$RUNNER_TEMP/openwrt-sdk/staging_dir/host/bin/apk"
+          release_dir="$GITHUB_WORKSPACE/packages/$PACKAGE_VERSION"
+          release_apk="$release_dir/$PACKAGE_NAME-$PACKAGE_VERSION-r$PACKAGE_RELEASE.apk"
+          "$apk_tool" --no-network --keys-dir "$release_dir" verify "$release_apk"
+          python3 packaging/verify-sdk-helper.py "$release_apk" --apk-tool "$apk_tool"
+          python3 packaging/test-packages.py --apk-tool "$apk_tool"
+      - name: Build package, optionally sign APK with maintainer key
+        env:
+          APK_PRIVATE_KEY: ${{ secrets.APK_SIGNING_KEY }}
+          PACKAGE_FORMAT: ${{ matrix.format }}
+        run: |
+          set -eu
+          trap 'rm -f "$RUNNER_TEMP/limiter-signing.pem"' EXIT
+          if [ "$PACKAGE_FORMAT" = apk ] && [ -n "$APK_PRIVATE_KEY" ]; then
+            umask 077
+            printf '%s\n' "$APK_PRIVATE_KEY" > "$RUNNER_TEMP/limiter-signing.pem"
+            openssl pkey -in "$RUNNER_TEMP/limiter-signing.pem" -pubout -out "$RUNNER_TEMP/limiter-signing.pem.pub"
+            export APK_SIGNING_KEY="$RUNNER_TEMP/limiter-signing.pem"
+            export APK_PUBLIC_KEY="$RUNNER_TEMP/limiter-signing.pem.pub"
+          fi
+          unset APK_PRIVATE_KEY
+          sh scripts/build-sdk-package.sh "$RUNNER_TEMP/openwrt-sdk" "$GITHUB_WORKSPACE/dist"
+      - name: Store installation package and instructions
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: wifi-client-limiter-${{ matrix.format }}-openwrt-${{ matrix.release }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 90

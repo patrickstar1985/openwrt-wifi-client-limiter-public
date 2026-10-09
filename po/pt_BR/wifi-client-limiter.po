@@ -1,0 +1,317 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: pt_BR\n"
+
+msgid "WiFi Client Limiter"
+msgstr "Limitador de clientes Wi-Fi"
+
+msgid "Global limit across selected WiFi networks. Protected devices are excluded from client limits and Internet restrictions. A reconnect cooldown can delay new connections after a disconnect."
+msgstr "Limite global nas redes WiFi selecionadas. Os dispositivos protegidos ficam isentos dos limites de clientes e das restrições de Internet. Uma pausa após a desconexão pode atrasar novas conexões."
+
+msgid "Settings"
+msgstr "Configurações"
+
+msgid "Enabled"
+msgstr "Ativado"
+
+msgid "Test mode"
+msgstr "Modo de teste"
+
+msgid "Log actions only. Do not disconnect devices or change Internet access."
+msgstr "Apenas registrar as ações. Não desconectar dispositivos nem alterar o acesso à Internet."
+
+msgid "Maximum number of guests"
+msgstr "Número máximo de convidados"
+
+msgid "0 = unlimited. Disconnect only when the limit is exceeded."
+msgstr "0 = ilimitado. Desconectar somente quando o limite for excedido."
+
+msgid "Maximum connection duration (seconds)"
+msgstr "Duração máxima da conexão (segundos)"
+
+msgid "0 = unlimited. 1800 = 30 minutes."
+msgstr "0 = ilimitado. 1800 = 30 minutos."
+
+msgid "Check interval (seconds)"
+msgstr "Intervalo de verificação (segundos)"
+
+msgid "WiFi networks to manage"
+msgstr "Redes Wi-Fi a gerenciar"
+
+msgid "Select the WiFi networks on which client limits should apply. Protected devices are excluded. No action is taken if no network is selected."
+msgstr "Selecione as redes Wi-Fi às quais os limites de dispositivos devem se aplicar. Os dispositivos protegidos ficam excluídos. Nenhuma ação é executada se nenhuma rede for selecionada."
+
+msgid "Protected MAC addresses"
+msgstr "Endereços MAC protegidos"
+
+msgid "Add administrator devices, servers and other permanent devices here. Check for private MAC addresses."
+msgstr "Adicione aqui os dispositivos dos administradores, os servidores e os outros dispositivos permanentes. Verifique se os dispositivos usam endereços MAC privados."
+
+msgid "Setup wizard"
+msgstr "Assistente de configuração"
+
+msgid "Start setup wizard"
+msgstr "Iniciar o assistente de configuração"
+
+msgid "Select WiFi networks to manage"
+msgstr "Selecionar redes Wi-Fi a gerenciar"
+
+msgid "Choose the WiFi networks on which client limits should apply. The wizard does not change WiFi configuration."
+msgstr "Escolha as redes Wi-Fi às quais os limites de dispositivos devem se aplicar. O assistente não altera a configuração Wi-Fi."
+
+msgid "Select at least one access point."
+msgstr "Selecione pelo menos um ponto de acesso."
+
+msgid "No access points are configured. Create a WiFi network in Network / Wireless first."
+msgstr "Nenhum ponto de acesso está configurado. Primeiro, crie uma rede Wi-Fi em Rede / Sem fio."
+
+msgid "Protect important devices"
+msgstr "Proteger dispositivos importantes"
+
+msgid "Select the connected WiFi devices that must never be disconnected. You can also enter MAC addresses manually."
+msgstr "Selecione os dispositivos Wi-Fi conectados que nunca devem ser desconectados. Você também pode inserir endereços MAC manualmente."
+
+msgid "Connected WiFi devices"
+msgstr "Dispositivos Wi-Fi conectados"
+
+msgid "No connected devices were found. Add protected MAC addresses manually if needed."
+msgstr "Nenhum dispositivo conectado foi encontrado. Adicione os endereços MAC protegidos manualmente, se necessário."
+
+msgid "Device discovery is unavailable. Add protected MAC addresses manually."
+msgstr "A detecção de dispositivos não está disponível. Adicione os endereços MAC protegidos manualmente."
+
+msgid "Refresh devices"
+msgstr "Atualizar dispositivos"
+
+msgid "Manual MAC addresses"
+msgstr "Endereços MAC inseridos manualmente"
+
+msgid "Limits"
+msgstr "Limites"
+
+msgid "Review setup"
+msgstr "Revisar configuração"
+
+msgid "Save setup and apply"
+msgstr "Salvar e aplicar a configuração"
+
+msgid "Unable to save setup."
+msgstr "Não foi possível salvar a configuração."
+
+msgid "Back"
+msgstr "Voltar"
+
+msgid "Next"
+msgstr "Avançar"
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Pending changes in other settings were found. Apply or discard them before saving this setup."
+msgstr "Foram encontradas alterações pendentes em outras configurações. Aplique ou descarte essas alterações antes de salvar esta configuração."
+
+msgid "Pending changes to this limiter were found. Apply or discard them before starting the wizard."
+msgstr "Foram encontradas alterações pendentes neste limitador. Aplique ou descarte essas alterações antes de iniciar o assistente."
+
+msgid "No changes have been saved yet."
+msgstr "Nenhuma alteração foi salva ainda."
+
+msgid "Reconnect cooldown (seconds)"
+msgstr "Espera antes da reconexão (segundos)"
+
+msgid "0 = no pause. After a disconnect, block automatic and manual reconnections on all selected WiFi networks for this duration."
+msgstr "0 = sem espera. Após uma desconexão, as reconexões automáticas e manuais são bloqueadas em todas as redes Wi-Fi selecionadas durante esse período."
+
+msgid "Reconnect protection window (seconds)"
+msgstr "Período de proteção da reconexão (segundos)"
+
+msgid "0 = disabled. For this long after a disconnect, returning devices may rejoin only if guest slots are free and the reconnect cooldown has ended."
+msgstr "0 = desativado. Durante esse período após uma desconexão, os dispositivos que retornarem só poderão se reconectar se houver vagas para convidados e o período de espera antes da reconexão tiver terminado."
+
+msgid "Allow guests to access the Internet"
+msgstr "Permitir que os convidados acessem a Internet"
+
+msgid "When disabled, guests can reach the local WiFi network only. Protected devices keep their existing Internet access. Test mode logs the policy without applying it."
+msgstr "Quando desativada, os convidados só podem acessar a rede WiFi local. Os dispositivos protegidos mantêm seu acesso atual à Internet. O modo de teste registra a política sem aplicá-la."
+
+msgid "Internet policy status"
+msgstr "Status da política de Internet"
+
+msgid "Guests may access the Internet under the existing firewall policy."
+msgstr "Os convidados podem acessar a Internet conforme a política atual do firewall."
+
+msgid "Internet access is blocked for guests. Protected devices keep their existing Internet access."
+msgstr "O acesso à Internet está bloqueado para os convidados. Os dispositivos protegidos mantêm seu acesso atual à Internet."
+
+msgid "Test mode. The Internet policy is logged without applying it."
+msgstr "Modo de teste. A política de Internet é registrada sem ser aplicada."
+
+msgid "The Internet policy is inactive."
+msgstr "A política de Internet está inativa."
+
+msgid "The Internet policy could not be applied. Check the system log."
+msgstr "Não foi possível aplicar a política de Internet. Verifique o registro do sistema."
+
+msgid "Internet policy status is unavailable."
+msgstr "O status da política de Internet não está disponível."
+
+msgid "Allowed"
+msgstr "Permitido"
+
+msgid "Blocked"
+msgstr "Bloqueado"
+
+msgid "Connected devices"
+msgstr "Dispositivos conectados"
+
+msgid "Device"
+msgstr "Dispositivo"
+
+msgid "MAC address"
+msgstr "Endereço MAC"
+
+msgid "WiFi network"
+msgstr "Rede WiFi"
+
+msgid "Internet policy"
+msgstr "Política de acesso à Internet"
+
+msgid "Refresh status"
+msgstr "Atualizar status"
+
+msgid "Device names may be unavailable. Permissions describe the limiter policy, not whether the Internet is reachable. Unsaved settings are not included."
+msgstr "Os nomes dos dispositivos podem não estar disponíveis. As permissões descrevem a política do limitador, não se a Internet está realmente acessível. As configurações não salvas não são incluídas."
+
+msgid "No connected WiFi devices were found."
+msgstr "Nenhum dispositivo WiFi conectado foi encontrado."
+
+msgid "Connected device information is unavailable."
+msgstr "As informações dos dispositivos conectados não estão disponíveis."
+
+msgid "Some WiFi devices could not be queried. The list may be incomplete."
+msgstr "Não foi possível consultar alguns dispositivos WiFi. A lista pode estar incompleta."
+
+msgid "Unknown device"
+msgstr "Dispositivo desconhecido"
+
+msgid "Allowed under existing firewall policy"
+msgstr "Permitido pela política atual do firewall"
+
+msgid "Blocked (local network only)"
+msgstr "Bloqueado (somente rede local)"
+
+msgid "Protected device (existing firewall policy)"
+msgstr "Dispositivo protegido (política atual do firewall)"
+
+msgid "Not managed by this limiter"
+msgstr "Não gerenciado por este limitador"
+
+msgid "Test mode (not enforced)"
+msgstr "Modo de teste (não aplicado)"
+
+msgid "Not enforced"
+msgstr "Não aplicada"
+
+msgid "Unknown"
+msgstr "Desconhecida"
+
+msgid "The limiter service is not running. Internet restrictions could not be verified."
+msgstr "O serviço do limitador não está em execução. Não foi possível verificar as restrições de acesso à Internet."
+
+msgid "The limiter service is starting. Internet restrictions have not been verified yet."
+msgstr "O serviço do limitador está iniciando. As restrições de acesso à Internet ainda não foram verificadas."
+
+msgid "The limiter service reported an error. Internet restrictions could not be verified."
+msgstr "O serviço do limitador informou um erro. Não foi possível verificar as restrições de acesso à Internet."
+
+msgid "Diagnostic code"
+msgstr "Código de diagnóstico"
+
+msgid "Diagnostic details"
+msgstr "Detalhes do diagnóstico"
+
+msgid "nftables is missing."
+msgstr "O nftables está ausente."
+
+msgid "The native OpenWrt firewall backend is unavailable."
+msgstr "O mecanismo nativo do firewall do OpenWrt não está disponível."
+
+msgid "A required limiter component is missing."
+msgstr "Um componente necessário do limitador está ausente."
+
+msgid "The MTK WiFi driver could not be read."
+msgstr "Não foi possível ler o driver WiFi da MTK."
+
+msgid "This MTK WiFi driver is not supported."
+msgstr "Este driver WiFi da MTK não é compatível."
+
+msgid "This MTK WiFi profile is not supported."
+msgstr "Este perfil WiFi da MTK não é compatível."
+
+msgid "MultiAP steering conflicts with reconnect protection."
+msgstr "O direcionamento de conexões MultiAP entra em conflito com a proteção contra reconexões."
+
+msgid "Required MTK WiFi tools or kernel log access are unavailable."
+msgstr "As ferramentas WiFi da MTK necessárias ou o acesso ao registro do kernel não estão disponíveis."
+
+msgid "The saved limiter configuration is invalid."
+msgstr "A configuração salva do limitador é inválida."
+
+msgid "The WiFi driver check failed."
+msgstr "A verificação do driver WiFi falhou."
+
+msgid "Another limiter worker is already running."
+msgstr "Outro processo do limitador já está em execução."
+
+msgid "Previous limiter rules could not be fully removed."
+msgstr "Não foi possível remover completamente as regras anteriores do limitador."
+
+msgid "The Internet rules could not be verified."
+msgstr "Não foi possível verificar as regras de acesso à Internet."
+
+msgid "The active Internet rules do not match the saved settings."
+msgstr "As regras ativas de acesso à Internet não correspondem às configurações salvas."
+
+msgid "Traffic acceleration could not be verified as disabled. Internet restrictions cannot be verified."
+msgstr "Não foi possível confirmar que a aceleração do tráfego está desativada. Não é possível verificar as restrições de acesso à Internet."
+
+msgid "WiFi network status is unavailable."
+msgstr "O status das redes WiFi não está disponível."
+
+msgid "None of the selected WiFi networks are active."
+msgstr "Nenhuma das redes WiFi selecionadas está ativa."
+
+msgid "No WiFi network is selected."
+msgstr "Nenhuma rede WiFi está selecionada."
+
+msgid "Protect device"
+msgstr "Proteger dispositivo"
+
+msgid "Protection pending"
+msgstr "Proteção pendente"
+
+msgid "Already protected"
+msgstr "Já protegido"
+
+msgid "Protection"
+msgstr "Proteção"
+
+msgid "Device added to protected MAC addresses. Save & Apply to activate the exception."
+msgstr "Dispositivo adicionado aos endereços MAC protegidos. Clique em Salvar e aplicar para ativar a exceção."
+
+msgid "Unable to update protected MAC addresses."
+msgstr "Não foi possível atualizar os endereços MAC protegidos."
+
+msgid "Operating mode"
+msgstr "Modo de operação"
+
+msgid "Live mode"
+msgstr "Modo ativo"
+
+msgid "Choose whether to test the settings or enforce them after applying."
+msgstr "Escolha se as configurações serão testadas ou se as restrições entrarão em vigor após a aplicação."
+
+msgid "Test mode only logs actions. Live mode enforces client limits, reconnect pauses and the selected Internet policy."
+msgstr "O modo de teste apenas registra as ações. O modo ativo impõe os limites de clientes, as pausas de reconexão e a política de acesso à Internet selecionada."

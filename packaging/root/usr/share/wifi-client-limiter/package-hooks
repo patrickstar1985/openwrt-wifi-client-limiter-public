@@ -1,0 +1,98 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+# Service enable/start/stop/disable is handled by OpenWrt's package wrappers.
+[ -z "${IPKG_INSTROOT:-}" ] || exit 0
+firewall_include_owned() {
+    [ "$(uci -q get firewall.wifi_client_limiter 2>/dev/null)" = include ] &&
+    [ "$(uci -q get firewall.wifi_client_limiter.type 2>/dev/null)" = script ] &&
+    [ "$(uci -q get firewall.wifi_client_limiter.path 2>/dev/null)" = /usr/share/wifi-client-limiter/firewall-reload.sh ]
+}
+firewall_no_pending_changes() {
+    local pending
+    pending="$(uci -q changes firewall)" || return 1
+    [ -z "$pending" ] && return 0
+    echo 'Save or discard pending firewall changes before installing or removing WiFi Client Limiter.' >&2
+    return 1
+}
+register_firewall_include() {
+    [ -f /etc/config/firewall ] || { echo 'OpenWrt firewall configuration is missing.' >&2; return 1; }
+    if uci -q get firewall.wifi_client_limiter >/dev/null 2>&1; then
+        firewall_include_owned || { echo 'The firewall section wifi_client_limiter belongs to another configuration. It was preserved.' >&2; return 1; }
+        if [ "$(uci -q get firewall.wifi_client_limiter.enabled 2>/dev/null)" = 1 ] &&
+           [ "$(uci -q get firewall.wifi_client_limiter.reload 2>/dev/null)" = 1 ] &&
+           [ "$(uci -q get firewall.wifi_client_limiter.fw4_compatible 2>/dev/null)" = 1 ]; then
+            return 0
+        fi
+    fi
+    firewall_no_pending_changes || return 1
+    if uci set firewall.wifi_client_limiter=include &&
+       uci set firewall.wifi_client_limiter.type=script &&
+       uci set firewall.wifi_client_limiter.path=/usr/share/wifi-client-limiter/firewall-reload.sh &&
+       uci set firewall.wifi_client_limiter.fw4_compatible=1 &&
+       uci set firewall.wifi_client_limiter.reload=1 &&
+       uci set firewall.wifi_client_limiter.enabled=1 &&
+       uci commit firewall; then
+        return 0
+    fi
+    uci -q revert firewall.wifi_client_limiter
+    return 1
+}
+remove_firewall_include() {
+    firewall_include_owned || return 0
+    firewall_no_pending_changes || return 1
+    if uci delete firewall.wifi_client_limiter && uci commit firewall; then
+        return 0
+    fi
+    uci -q revert firewall.wifi_client_limiter
+    return 1
+}
+register_languages() {
+    [ -f /usr/share/wifi-client-limiter/languages ] || return 0
+    [ -f /etc/config/luci ] || return 0
+    local changed=0 code label
+    while IFS='|' read -r code label; do
+        [ -n "$code" ] || continue
+        if [ -z "$(uci -q get "luci.languages.$code" 2>/dev/null)" ]; then
+            uci set "luci.languages.$code=$label" || return 1
+            changed=1
+        fi
+    done < /usr/share/wifi-client-limiter/languages
+    [ "$changed" = 0 ] || uci commit luci
+}
+case "${1:-}" in
+    languages) register_languages ;;
+    firewall-register) register_firewall_include ;;
+    firewall-remove) remove_firewall_include ;;
+    postinst)
+        register_firewall_include || exit 1
+        register_languages || exit 1
+        for config_file in /etc/config/wifi-client-limiter /etc/wifi-client-limiter/offload-backup /etc/wifi-client-limiter/offload-reload-required /etc/wifi-client-limiter/native-flowoffload-backup /etc/wifi-client-limiter/vendor-acceleration-backup /etc/wifi-client-limiter/vendor-acceleration-reload-required; do
+            if ! grep -Fxq "$config_file" /etc/sysupgrade.conf 2>/dev/null; then
+                echo "$config_file" >> /etc/sysupgrade.conf
+            fi
+        done
+        rm -f /tmp/luci-indexcache /tmp/luci-indexcache.*
+        rm -rf /tmp/luci-modulecache
+        if [ -x /etc/init.d/rpcd ]; then /etc/init.d/rpcd restart || true; fi
+        ;;
+    prerm)
+        # Remove only policy owned by this plugin while its helper still exists.
+        if [ -x /etc/init.d/wifi-client-limiter ]; then
+            /etc/init.d/wifi-client-limiter stop || exit $?
+        fi
+        if [ -x /usr/share/wifi-client-limiter/internet-policy.sh ]; then
+            /usr/share/wifi-client-limiter/internet-policy.sh cleanup || exit $?
+        fi
+        if [ -x /usr/share/wifi-client-limiter/station-adapter.sh ]; then
+            /usr/share/wifi-client-limiter/station-adapter.sh cleanup || exit $?
+        fi
+        # Keep a copy even when an unchanged default conffile is removed.
+        if [ -f /etc/config/wifi-client-limiter ]; then
+            cp -p /etc/config/wifi-client-limiter /etc/config/wifi-client-limiter.backup
+        fi
+        upgrading="${PKG_UPGRADE:-0}"
+        for action in "$@"; do [ "$action" != upgrade ] || upgrading=1; done
+        [ "$upgrading" = 1 ] || remove_firewall_include || exit $?
+        ;;
+    *) echo 'Usage: package-hooks {languages|firewall-register|firewall-remove|postinst|prerm}' >&2; exit 1 ;;
+esac

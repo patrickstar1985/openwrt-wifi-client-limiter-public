@@ -1,0 +1,359 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+. /lib/functions.sh
+. /usr/share/libubox/jshn.sh
+. /usr/share/wifi-client-limiter/internet-policy.sh
+. /usr/share/wifi-client-limiter/station-adapter.sh
+umask 077
+STATE=/tmp/wifi-client-limiter
+mkdir -p "$STATE"
+log() { logger -t wifi-client-limiter "$*"; }
+valid_mac() { echo "$1" | grep -Eq '^([0-9a-f]{2}:){5}[0-9a-f]{2}$'; }
+uint() { case "$1" in ''|*[!0-9]*) return 1;; esac; [ "$1" -le 2147483647 ] 2>/dev/null; }
+decimal_uint() { local value="$1"; while [ "${value#0}" != "$value" ]; do value="${value#0}"; done; printf '%s\n' "${value:-0}"; }
+clock_seconds() { cut -d. -f1 /proc/uptime; }
+add_network() { networks="$networks $1"; }
+add_white() { white="$white $(echo "$1" | tr 'A-F' 'a-f')"; }
+load_settings() {
+ config_load wifi-client-limiter
+ config_get_bool enabled main enabled 0
+ config_get_bool dry main dry_run 1
+ config_get_bool guest_internet main guest_internet 1
+ config_get max main max_clients 25
+ config_get session main max_session 0
+ config_get interval main interval 10
+ config_get cooldown main reconnect_cooldown 0
+ config_get window main reconnect_window 0
+ networks=; white=
+ config_list_foreach main network add_network
+ config_list_foreach main whitelist add_white
+ for n in "$max" "$session" "$interval" "$cooldown" "$window"; do uint "$n" || { log 'Invalid numeric configuration; skipping'; return 1; }; done
+ [ "$max" -le 4096 ] && [ "$session" -le 604800 ] && [ "$interval" -ge 2 ] && [ "$interval" -le 3600 ] || return 1
+ [ "$cooldown" -le 1800 ] || { log 'Reconnect cooldown must be between 0 and 1800 seconds; skipping'; return 1; }
+ [ "$window" -le 86400 ] || { log 'Reconnect window must be between 0 and 86400 seconds; skipping'; return 1; }
+ # UCI integers are decimal, including 008. Normalize before shell arithmetic.
+ max="$(decimal_uint "$max")"; session="$(decimal_uint "$session")"
+ interval="$(decimal_uint "$interval")"; cooldown="$(decimal_uint "$cooldown")"
+ window="$(decimal_uint "$window")"
+ cooldown_ms=$((cooldown * 1000))
+}
+# Resolve stable UCI wifi-iface section names to current kernel AP names.
+resolve_interfaces() {
+ local data radios radio entries entry section iface mode
+ if command -v station_ap_records >/dev/null 2>&1; then
+  station_ap_records > "$STATE/station-aps" || return 1
+  awk -v selected="$networks" 'BEGIN {n=split(selected,a," ");for(i=1;i<=n;i++) wanted[a[i]]=1} wanted[$2] {print $1}' "$STATE/station-aps"
+  return
+ fi
+ data="$(ubus call network.wireless status 2>/dev/null)" || return 1
+ json_load "$data" || return 1
+ json_get_keys radios
+ for radio in $radios; do
+  json_select "$radio" || continue
+  if json_select interfaces; then
+   json_get_keys entries
+   for entry in $entries; do
+    json_select "$entry"
+    json_get_var section section; json_get_var iface ifname
+    mode=; if json_select config; then json_get_var mode mode; json_select ..; fi
+    case " $networks " in *" $section "*)
+     case "$iface" in ''|*[!a-zA-Z0-9_.-]*) ;; *)
+      [ "$mode" = ap ] && echo "$iface";; esac;; esac
+    json_select ..
+   done
+   json_select ..
+  fi
+  json_select ..
+ done
+}
+managed_driver() {
+ local driver
+ [ -f "$STATE/station-aps" ] && driver="$(awk -v i="$1" '$1==i {print $3;exit}' "$STATE/station-aps")"
+ case "$driver" in mtk) printf '%s\n' mtk;; *) printf '%s\n' hostapd;; esac
+}
+kick() {
+ local iface="$1" mac="$2" why="$3" seconds="${4:-$cooldown}" milliseconds
+ milliseconds=$((seconds * 1000))
+ if [ "$dry" = 1 ]; then log "TEST: $why: $mac on $iface"; return 0; fi
+ if [ "$(managed_driver "$iface")" = mtk ]; then
+  if station_mtk_kick "$iface" "$mac" "$seconds"; then
+   log "$why: disconnect requested for $mac on $iface (MTK reconnect cooldown ${seconds}s)"
+   rm -f "$STATE/$iface.$mac"
+   return 0
+  fi
+  log "Disconnect failed: $mac on $iface (MTK driver)"; return 1
+ fi
+ if ubus call "hostapd.$iface" del_client "{\"addr\":\"$mac\",\"reason\":5,\"deauth\":true,\"ban_time\":$milliseconds}" >/dev/null 2>&1; then
+  if [ "$seconds" -gt 0 ]; then
+   log "$why: disconnect requested for $mac on $iface (reconnect cooldown ${seconds}s)"
+  else log "$why: disconnected $mac on $iface (no ban)"; fi
+  rm -f "$STATE/$iface.$mac"
+ else log "Disconnect failed: $mac on $iface"; return 1; fi
+}
+ban_other_ap() {
+ local iface="$1" mac="$2" seconds="${3:-$cooldown}" milliseconds
+ milliseconds=$((seconds * 1000))
+ if [ "$dry" = 1 ]; then log "TEST: Reconnect cooldown ${seconds}s: $mac on $iface"; return 0; fi
+ if [ "$(managed_driver "$iface")" = mtk ]; then
+  if station_mtk_ban "$iface" "$mac" "$seconds"; then
+   log "Reconnect cooldown requested: $mac on $iface (${seconds}s, MTK driver)"
+   return 0
+  fi
+  log "WARNING: Reconnect cooldown failed: $mac on $iface; another managed AP may accept this device"; return 1
+ fi
+ # del_client also bans a MAC without a current station entry. Explicit deauth
+ # covers a client that roams onto this BSS after the complete client snapshot.
+ if ubus call "hostapd.$iface" del_client "{\"addr\":\"$mac\",\"reason\":5,\"deauth\":true,\"ban_time\":$milliseconds}" >/dev/null 2>&1; then
+  log "Reconnect cooldown requested: $mac on $iface (${seconds}s)"
+ else log "WARNING: Reconnect cooldown failed: $mac on $iface; another managed AP may accept this device"; return 1; fi
+}
+# All registry work follows a complete AP snapshot. The persistent RAM file has
+# no dot in its name, so association-age cleanup does not remove it.
+recent_load() {
+ local m evicted floor expires rest
+ : > "$STATE/recent-cycle"
+ [ "$window" -gt 0 ] && [ -f "$STATE/recent" ] || return 0
+ while read -r m evicted floor expires rest; do
+  valid_mac "$m" && uint "$evicted" && uint "$floor" && uint "$expires" || continue
+  evicted="$(decimal_uint "$evicted")"; floor="$(decimal_uint "$floor")"; expires="$(decimal_uint "$expires")"
+  [ -z "$rest" ] && [ "$evicted" -le "$now" ] && [ "$floor" -ge "$evicted" ] && [ "$expires" -gt "$now" ] || continue
+  [ "$((floor-evicted))" -le 1800 ] && [ "$((expires-evicted))" -le 86400 ] || continue
+  case " $white " in *" $m "*) continue;; esac
+  printf '%s %s %s %s\n' "$m" "$evicted" "$floor" "$expires"
+ done < "$STATE/recent" | sort -n -k2,2 -k1,1 | awk '!seen[$1]++ && ++n<=4096' > "$STATE/recent-cycle"
+}
+recent_remove() { awk -v m="$1" '$1!=m' "$STATE/recent-cycle" > "$STATE/recent-new"; mv "$STATE/recent-new" "$STATE/recent-cycle"; }
+recent_add() {
+ local target="$1" evicted="${2:-}"
+ [ "$window" -gt 0 ] && [ "$dry" = 0 ] || return 0
+ grep -q "^$target " "$STATE/recent-cycle" && return 0
+ if [ "$(wc -l < "$STATE/recent-cycle")" -ge 4096 ]; then
+  log "WARNING: Readmission registry is full; cannot remember $target"; return 0
+ fi
+ [ -n "$evicted" ] || evicted="$(clock_seconds)"
+ printf '%s %s %s %s\n' "$target" "$evicted" "$((evicted+cooldown))" "$((evicted+window))" >> "$STATE/recent-cycle"
+}
+seconds_until() {
+ local seconds current
+ current="$(clock_seconds)"; seconds=$(($1-current))
+ [ "$seconds" -ge 0 ] || seconds=0
+ printf '%s\n' "$seconds"
+}
+recent_pause() {
+ local floor="$1" expires="$2" seconds current
+ current="$(clock_seconds)"
+ if [ "$floor" -gt "$current" ]; then seconds=$((floor-current)); else
+  seconds=$((interval*2)); [ "$seconds" -le 60 ] || seconds=60
+  [ "$seconds" -le "$((expires-current))" ] || seconds=$((expires-current))
+ fi
+ # hostapd converts milliseconds to microseconds in a signed int.
+ [ "$seconds" -le 1800 ] || seconds=1800
+ [ "$seconds" -ge 0 ] || seconds=0
+ printf '%s\n' "$seconds"
+}
+recent_returners() {
+ local m evicted floor expires start seconds ordinary slots current retry_expires
+ readmission_failed=0
+ ordinary="$(awk 'FILENAME==ARGV[1] {held[$1]=1;next} !($1 in held) {n++} END {print n+0}' "$STATE/recent-cycle" "$STATE/remaining")"
+ if [ "$max" = 0 ]; then slots=4096; else slots=$((max-ordinary)); fi
+ [ "$slots" -ge 0 ] || slots=0
+ # Iterate a stable copy: admission removes records, rejection retains them.
+ cp "$STATE/recent-cycle" "$STATE/recent-pass"
+ while read -r m evicted floor expires; do
+  start="$(awk -v m="$m" '$1==m {print $2;exit}' "$STATE/remaining")"
+  [ -n "$start" ] || continue
+  current="$(clock_seconds)"
+  if [ "$current" -ge "$floor" ] && [ "$start" -ge "$evicted" ] && [ "$slots" -gt 0 ]; then
+   slots=$((slots-1)); recent_remove "$m"
+   log "Readmission accepted: $m has a free guest slot"
+  else
+   retry_expires="$expires"
+   # A free slot must not turn an expiring minimum pause into a new capacity
+   # hold if the clock crosses not_before while the request is prepared.
+   if [ "$slots" -gt 0 ] && [ "$start" -ge "$evicted" ]; then retry_expires="$floor"; fi
+   seconds="$(recent_pause "$floor" "$retry_expires")"
+   if [ "$seconds" = 0 ] && [ "$slots" -gt 0 ] && [ "$start" -ge "$evicted" ]; then
+    slots=$((slots-1)); recent_remove "$m"; log "Readmission accepted: $m has a free guest slot"
+   elif disconnect_device "$m" 'Readmission blocked' "$interfaces" "$seconds" "$floor" "$retry_expires"; then remove_device "$m"; else readmission_failed=1; fi
+  fi
+ done < "$STATE/recent-pass"
+}
+recent_refresh() {
+ local m evicted floor expires seconds iface count
+ [ "$window" -gt 0 ] && [ "$max" -gt 0 ] || return 0
+ count="$(wc -l < "$STATE/remaining")"
+ [ "$count" -ge "$max" ] || return 0
+ while read -r m evicted floor expires; do
+  # Never shorten the original minimum pause. With a free slot, short bans
+  # simply expire; del_client ban_time=0 would also disconnect a racing join.
+  [ "$now" -ge "$floor" ] || continue
+  awk -v m="$m" '$1==m {found=1} END {exit !found}' "$STATE/current" && continue
+  for iface in $interfaces; do
+   seconds="$(recent_pause "$floor" "$expires")"
+   [ "$seconds" -gt 0 ] && ban_other_ap "$iface" "$m" "$seconds" || :
+  done
+ done < "$STATE/recent-cycle"
+}
+cycle() {
+ local now interfaces iface data keys mac age since sf old key count_pause short_pause
+ if command -v station_mtk_prune >/dev/null 2>&1; then
+  station_mtk_prune || log 'MTK reconnect leases could not be cleaned; check system log'
+ fi
+ if ! load_settings; then
+  if command -v station_service_status >/dev/null 2>&1; then
+   station_service_status error configuration_invalid 'Limiter settings are invalid; save valid values before enforcement can resume' || :
+  fi
+  return
+ fi
+ if [ "$enabled" = 1 ] && [ "$dry" = 0 ] && [ -n "$networks" ] && command -v station_preflight >/dev/null 2>&1; then
+  station_preflight worker || return
+ fi
+ if command -v station_service_status >/dev/null 2>&1; then station_service_status running || :; fi
+ internet_policy || log 'Guest Internet policy could not be updated; check LuCI status'
+ if command -v station_mtk_cleanup >/dev/null 2>&1; then
+  if [ "$enabled" != 1 ] || [ "$dry" = 1 ] || [ -z "$networks" ]; then
+   station_mtk_cleanup || log 'MTK reconnect protection could not be removed; check system log'
+  fi
+ fi
+ [ "$enabled" = 1 ] || return
+ [ -n "$networks" ] || return
+ now="$(clock_seconds)"
+ interfaces="$(resolve_interfaces)" || { log 'Wireless status unavailable'; return; }
+ interfaces="$(printf '%s\n' "$interfaces" | sort -u)"
+ if command -v station_mtk_prune >/dev/null 2>&1; then
+  station_mtk_prune configured || { log 'MTK reconnect policy could not be reconciled; skip entire cycle'; return; }
+ fi
+ : > "$STATE/current"; : > "$STATE/seen"; : > "$STATE/attempted"
+ for iface in $interfaces; do
+  if command -v station_clients >/dev/null 2>&1; then
+   keys="$(station_clients "$iface" "$(managed_driver "$iface")")" || { log "Cannot read WiFi associations on $iface; skip entire cycle"; return; }
+  else
+   data="$(ubus call "hostapd.$iface" get_clients 2>/dev/null)" || { log "Cannot read hostapd.$iface; skip entire cycle"; return; }
+   json_load "$data" || return
+   json_select clients || return
+   json_get_keys keys
+  fi
+  # iw provides actual association age where the driver supports it.
+  iw dev "$iface" station dump 2>/dev/null | awk '
+   /^Station / {mac=tolower($2)}
+   /connected time:/ && $3 ~ /^[0-9]+$/ {print mac, $3}
+  ' > "$STATE/ages"
+  for key in $keys; do
+   mac="$(echo "$key" | tr 'A-F' 'a-f')"
+   valid_mac "$mac" || continue
+   case " $white " in *" $mac "*) continue;; esac
+   sf="$STATE/$iface.$mac"
+   echo "$iface.$mac" >> "$STATE/seen"
+   age="$(awk -v m="$mac" '$1==m {print $2;exit}' "$STATE/ages")"
+   if uint "$age"; then
+    since=$((now-age))
+   else
+    since="$now"
+    if [ -f "$sf" ]; then read -r old < "$sf"; uint "$old" && [ "$old" -le "$now" ] && since="$old"; fi
+    age=$((now-since))
+   fi
+   echo "$since" > "$sf"
+   echo "$mac $iface $since $age" >> "$STATE/current"
+  done
+ done
+ # Clean only association-age records after a complete successful scan. RPC,
+ # Internet and private driver snapshots can be written concurrently.
+ for sf in "$STATE"/*.*; do
+  [ -f "$sf" ] || continue
+  key="${sf##*/}"
+  mac="${key##*.}"; iface="${key%.*}"
+  valid_mac "$mac" || continue
+  case "$iface" in ''|*[!a-zA-Z0-9_.-]*) continue;; esac
+  grep -Fxq "$key" "$STATE/seen" || rm -f "$sf"
+ done
+ # Unique devices across selected BSSs; oldest association determines age.
+ awk '{if (!($1 in start) || $3<start[$1]) {start[$1]=$3; age[$1]=$4}} END {for(m in start) print m,start[m],age[m]}' "$STATE/current" |
+  sort -n -k2,2 -k1,1 > "$STATE/devices"
+ cp "$STATE/devices" "$STATE/remaining"
+ now="$(clock_seconds)"
+ recent_load
+ recent_returners
+ if [ "$session" -gt 0 ]; then
+  while read -r mac since age; do
+   [ "$age" -ge "$session" ] || continue
+   disconnect_device "$mac" 'Session limit' "$interfaces" && remove_device "$mac"
+  done < "$STATE/devices"
+ fi
+ if [ "$max" -gt 0 ] && [ "$readmission_failed" = 0 ]; then
+  count_pause="$cooldown"
+  if [ "$window" -gt 0 ]; then
+   short_pause="$(recent_pause "$now" "$((now+window))")"
+   [ "$count_pause" -ge "$short_pause" ] || count_pause="$short_pause"
+  fi
+  count="$(wc -l < "$STATE/remaining")"
+  while read -r mac since age; do
+   [ "$count" -gt "$max" ] || break
+   if disconnect_device "$mac" 'Client limit' "$interfaces" "$count_pause"; then count=$((count-1)); remove_device "$mac"; fi
+  done < "$STATE/remaining"
+ fi
+ if [ "$readmission_failed" = 1 ]; then
+  log 'WARNING: Returner disconnect failed; ordinary capacity evictions skipped; guest limit may remain exceeded'
+ fi
+ recent_refresh
+ if [ "$dry" = 0 ]; then mv "$STATE/recent-cycle" "$STATE/recent"; fi
+}
+disconnect_device() {
+ local target="$1" why="$2" managed="$3" seconds="${4:-$cooldown}" floor="${5:-}" expires="${6:-}" m i s a failed=0 kicked=0 associated= initial_seconds initial_deadline= request_time
+ initial_seconds="$seconds"
+ # A failed session-limit eviction must not retry and extend already accepted
+ # bans again in the count pass. This file lasts only for the current scan.
+ grep -Fxq "$target" "$STATE/attempted" && return 1
+ echo "$target" >> "$STATE/attempted"
+ while read -r m i s a; do
+  [ "$m" = "$target" ] || continue
+  associated="$associated $i"
+  if [ -n "$floor" ]; then seconds="$(recent_pause "$floor" "$expires")"
+  elif [ -n "$initial_deadline" ]; then seconds="$(seconds_until "$initial_deadline")"; fi
+  request_time="$(clock_seconds)"
+  if kick "$i" "$m" "$why" "$seconds"; then
+   kicked=1; recent_add "$target" "$request_time"
+   if [ "$window" -gt 0 ] && [ -z "$floor" ] && [ -z "$initial_deadline" ]; then initial_deadline=$((request_time+initial_seconds)); fi
+  else failed=1; fi
+ done < "$STATE/current"
+ if [ "$seconds" -gt 0 ] && [ "$kicked" = 1 ]; then
+  for i in $managed; do
+   case " $associated " in *" $i "*) continue;; esac
+   # An extra-BSS ban failure cannot undo a successful disconnect or make the
+   # counter evict another device. Warn separately and preserve kick status.
+   if [ -n "$floor" ]; then seconds="$(recent_pause "$floor" "$expires")"
+   elif [ -n "$initial_deadline" ]; then seconds="$(seconds_until "$initial_deadline")"; fi
+   [ "$seconds" -gt 0 ] && ban_other_ap "$i" "$target" "$seconds" || :
+  done
+ fi
+ [ "$failed" = 0 ] && [ "$kicked" = 1 ]
+}
+remove_device() { awk -v m="$1" '$1!=m' "$STATE/remaining" > "$STATE/new"; mv "$STATE/new" "$STATE/remaining"; }
+once_preflight() {
+ local result
+ load_settings || return 1
+ if [ "$enabled" = 1 ] && [ "$dry" = 0 ] && command -v station_selected_mtk >/dev/null 2>&1; then
+  station_selected_mtk; result=$?
+  if [ "$result" != 1 ]; then
+   log 'Enforcing MTK --once is refused: start the service so it can expire native reconnect bans; test mode --once remains available'
+   return 1
+  fi
+ fi
+ return 0
+}
+worker_shutdown() {
+ local failed=0
+ station_mtk_cleanup || failed=1
+ internet_cleanup || failed=1
+ if [ "$failed" = 0 ]; then station_service_status stopped
+ else station_service_status error cleanup_failed 'Owned policy could not be fully removed; check the system log'; fi
+ exit 0
+}
+# procd runs one worker. A directory lock also protects manual --once calls.
+if ! mkdir "$STATE/lock" 2>/dev/null; then
+ station_service_status error worker_lock_busy 'Another limiter worker owns the runtime lock' || :
+ exit 1
+fi
+trap 'rmdir "$STATE/lock" 2>/dev/null' EXIT
+trap worker_shutdown INT TERM
+if [ "${1:-}" = --once ]; then once_preflight || exit 1; cycle; exit; fi
+while :; do cycle; sleep "$(station_mtk_sleep "${interval:-10}")"; done

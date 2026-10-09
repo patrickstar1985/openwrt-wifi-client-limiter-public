@@ -1,0 +1,22 @@
+{
+  "luci-app-wifi-client-limiter": {
+    "description": "Configure WLAN client limiter",
+    "read": {
+      "ubus": {
+        "wifi-client-limiter": ["status", "clients"],
+        "network.wireless": ["status"],
+        "hostapd.*": ["get_clients"],
+        "luci-rpc": ["getHostHints"]
+      },
+      "uci": [
+        "wifi-client-limiter",
+        "wireless"
+      ]
+    },
+    "write": {
+      "uci": [
+        "wifi-client-limiter"
+      ]
+    }
+  }
+}

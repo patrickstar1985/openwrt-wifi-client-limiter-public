@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+node_modules/
+.DS_Store
+*.zip
+dist/
+*.pem
+*.key
+key-build*
+/.vs

@@ -1,0 +1,317 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_Hans\n"
+
+msgid "WiFi Client Limiter"
+msgstr "Wi-Fi 客户端限制器"
+
+msgid "Global limit across selected WiFi networks. Protected devices are excluded from client limits and Internet restrictions. A reconnect cooldown can delay new connections after a disconnect."
+msgstr "所选 WiFi 网络共用此限制。受保护设备不受客户端限制和互联网访问限制。断开连接后的冷却时间可能会延迟新的连接。"
+
+msgid "Settings"
+msgstr "设置"
+
+msgid "Enabled"
+msgstr "启用"
+
+msgid "Test mode"
+msgstr "测试模式"
+
+msgid "Log actions only. Do not disconnect devices or change Internet access."
+msgstr "仅记录操作，不断开设备连接，也不更改互联网访问权限。"
+
+msgid "Maximum number of guests"
+msgstr "访客设备数量上限"
+
+msgid "0 = unlimited. Disconnect only when the limit is exceeded."
+msgstr "0 = 不限制。仅在超过上限时断开设备连接。"
+
+msgid "Maximum connection duration (seconds)"
+msgstr "最长连接时长（秒）"
+
+msgid "0 = unlimited. 1800 = 30 minutes."
+msgstr "0 = 不限制。1800 = 30 分钟。"
+
+msgid "Check interval (seconds)"
+msgstr "检查间隔（秒）"
+
+msgid "WiFi networks to manage"
+msgstr "要管理的 Wi-Fi 网络"
+
+msgid "Select the WiFi networks on which client limits should apply. Protected devices are excluded. No action is taken if no network is selected."
+msgstr "请选择要应用客户端限制的 Wi-Fi 网络。受保护的设备不在限制范围内。未选择任何网络时，不执行任何操作。"
+
+msgid "Protected MAC addresses"
+msgstr "受保护的 MAC 地址"
+
+msgid "Add administrator devices, servers and other permanent devices here. Check for private MAC addresses."
+msgstr "在此添加管理员设备、服务器及其他长期连接的设备。请检查设备是否使用私有 MAC 地址。"
+
+msgid "Setup wizard"
+msgstr "设置向导"
+
+msgid "Start setup wizard"
+msgstr "启动设置向导"
+
+msgid "Select WiFi networks to manage"
+msgstr "选择要管理的 Wi-Fi 网络"
+
+msgid "Choose the WiFi networks on which client limits should apply. The wizard does not change WiFi configuration."
+msgstr "请选择要应用客户端限制的 Wi-Fi 网络。此向导不会更改 Wi-Fi 配置。"
+
+msgid "Select at least one access point."
+msgstr "请至少选择一个接入点。"
+
+msgid "No access points are configured. Create a WiFi network in Network / Wireless first."
+msgstr "尚未配置任何接入点。请先在“网络 / 无线”中创建 Wi-Fi 网络。"
+
+msgid "Protect important devices"
+msgstr "保护重要设备"
+
+msgid "Select the connected WiFi devices that must never be disconnected. You can also enter MAC addresses manually."
+msgstr "请选择绝不能被断开连接的已连接 Wi-Fi 设备。也可以手动输入 MAC 地址。"
+
+msgid "Connected WiFi devices"
+msgstr "已连接的 Wi-Fi 设备"
+
+msgid "No connected devices were found. Add protected MAC addresses manually if needed."
+msgstr "未找到已连接的设备。如有需要，请手动添加受保护的 MAC 地址。"
+
+msgid "Device discovery is unavailable. Add protected MAC addresses manually."
+msgstr "设备发现功能不可用。请手动添加受保护的 MAC 地址。"
+
+msgid "Refresh devices"
+msgstr "刷新设备列表"
+
+msgid "Manual MAC addresses"
+msgstr "手动输入的 MAC 地址"
+
+msgid "Limits"
+msgstr "限制"
+
+msgid "Review setup"
+msgstr "检查配置"
+
+msgid "Save setup and apply"
+msgstr "保存配置并应用"
+
+msgid "Unable to save setup."
+msgstr "无法保存配置。"
+
+msgid "Back"
+msgstr "上一步"
+
+msgid "Next"
+msgstr "下一步"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Pending changes in other settings were found. Apply or discard them before saving this setup."
+msgstr "其他设置中存在尚未应用的更改。请先应用或放弃这些更改，再保存此配置。"
+
+msgid "Pending changes to this limiter were found. Apply or discard them before starting the wizard."
+msgstr "此限制器存在尚未应用的更改。请先应用或放弃这些更改，再启动向导。"
+
+msgid "No changes have been saved yet."
+msgstr "尚未保存任何更改。"
+
+msgid "Reconnect cooldown (seconds)"
+msgstr "重新连接等待时间（秒）"
+
+msgid "0 = no pause. After a disconnect, block automatic and manual reconnections on all selected WiFi networks for this duration."
+msgstr "0 = 无需等待。设备断开连接后，在此时长内禁止其自动或手动重新连接到任何所选 Wi-Fi 网络。"
+
+msgid "Reconnect protection window (seconds)"
+msgstr "重新连接保护时段（秒）"
+
+msgid "0 = disabled. For this long after a disconnect, returning devices may rejoin only if guest slots are free and the reconnect cooldown has ended."
+msgstr "0 = 禁用。设备断开连接后的这段时间内，只有在访客设备名额有空余且重新连接等待时间已结束时，才允许其重新连接。"
+
+msgid "Allow guests to access the Internet"
+msgstr "允许访客访问互联网"
+
+msgid "When disabled, guests can reach the local WiFi network only. Protected devices keep their existing Internet access. Test mode logs the policy without applying it."
+msgstr "关闭后，访客只能访问本地 WiFi 网络。受保护设备保留原有的互联网访问权限。测试模式仅记录策略，不实际应用。"
+
+msgid "Internet policy status"
+msgstr "互联网访问策略状态"
+
+msgid "Guests may access the Internet under the existing firewall policy."
+msgstr "访客可按照现有防火墙策略访问互联网。"
+
+msgid "Internet access is blocked for guests. Protected devices keep their existing Internet access."
+msgstr "访客的互联网访问已被阻止。受保护设备保留原有的互联网访问权限。"
+
+msgid "Test mode. The Internet policy is logged without applying it."
+msgstr "测试模式。仅记录互联网访问策略，不实际应用。"
+
+msgid "The Internet policy is inactive."
+msgstr "互联网访问策略未启用。"
+
+msgid "The Internet policy could not be applied. Check the system log."
+msgstr "无法应用互联网访问策略。请检查系统日志。"
+
+msgid "Internet policy status is unavailable."
+msgstr "无法获取互联网访问策略状态。"
+
+msgid "Allowed"
+msgstr "允许"
+
+msgid "Blocked"
+msgstr "阻止"
+
+msgid "Connected devices"
+msgstr "已连接设备"
+
+msgid "Device"
+msgstr "设备"
+
+msgid "MAC address"
+msgstr "MAC 地址"
+
+msgid "WiFi network"
+msgstr "WiFi 网络"
+
+msgid "Internet policy"
+msgstr "互联网访问策略"
+
+msgid "Refresh status"
+msgstr "刷新状态"
+
+msgid "Device names may be unavailable. Permissions describe the limiter policy, not whether the Internet is reachable. Unsaved settings are not included."
+msgstr "设备名称可能不可用。权限表示限流器的策略，并不代表实际能否访问互联网。未保存的设置不包含在内。"
+
+msgid "No connected WiFi devices were found."
+msgstr "未找到已连接的 WiFi 设备。"
+
+msgid "Connected device information is unavailable."
+msgstr "已连接设备的信息不可用。"
+
+msgid "Some WiFi devices could not be queried. The list may be incomplete."
+msgstr "部分 WiFi 设备无法查询。列表可能不完整。"
+
+msgid "Unknown device"
+msgstr "未知设备"
+
+msgid "Allowed under existing firewall policy"
+msgstr "依照现有防火墙策略允许"
+
+msgid "Blocked (local network only)"
+msgstr "已阻止（仅限本地网络）"
+
+msgid "Protected device (existing firewall policy)"
+msgstr "受保护设备（现有防火墙策略）"
+
+msgid "Not managed by this limiter"
+msgstr "不由此限流器管理"
+
+msgid "Test mode (not enforced)"
+msgstr "测试模式（未实施）"
+
+msgid "Not enforced"
+msgstr "未实施"
+
+msgid "Unknown"
+msgstr "未知"
+
+msgid "The limiter service is not running. Internet restrictions could not be verified."
+msgstr "限流器服务未运行。未能验证互联网访问限制。"
+
+msgid "The limiter service is starting. Internet restrictions have not been verified yet."
+msgstr "限流器服务正在启动。尚未验证互联网访问限制。"
+
+msgid "The limiter service reported an error. Internet restrictions could not be verified."
+msgstr "限流器服务报告了错误。未能验证互联网访问限制。"
+
+msgid "Diagnostic code"
+msgstr "诊断代码"
+
+msgid "Diagnostic details"
+msgstr "诊断详情"
+
+msgid "nftables is missing."
+msgstr "缺少 nftables。"
+
+msgid "The native OpenWrt firewall backend is unavailable."
+msgstr "原生 OpenWrt 防火墙后端不可用。"
+
+msgid "A required limiter component is missing."
+msgstr "缺少必需的限流器组件。"
+
+msgid "The MTK WiFi driver could not be read."
+msgstr "无法读取 MTK WiFi 驱动程序。"
+
+msgid "This MTK WiFi driver is not supported."
+msgstr "不支持此 MTK WiFi 驱动程序。"
+
+msgid "This MTK WiFi profile is not supported."
+msgstr "不支持此 MTK WiFi 配置。"
+
+msgid "MultiAP steering conflicts with reconnect protection."
+msgstr "MultiAP 引导与重新连接保护冲突。"
+
+msgid "Required MTK WiFi tools or kernel log access are unavailable."
+msgstr "必需的 MTK WiFi 工具或内核日志访问不可用。"
+
+msgid "The saved limiter configuration is invalid."
+msgstr "已保存的限流器配置无效。"
+
+msgid "The WiFi driver check failed."
+msgstr "WiFi 驱动程序检查失败。"
+
+msgid "Another limiter worker is already running."
+msgstr "另一个限流器工作进程已在运行。"
+
+msgid "Previous limiter rules could not be fully removed."
+msgstr "无法完全移除之前的限流器规则。"
+
+msgid "The Internet rules could not be verified."
+msgstr "无法验证互联网访问规则。"
+
+msgid "The active Internet rules do not match the saved settings."
+msgstr "当前生效的互联网访问规则与已保存的设置不一致。"
+
+msgid "Traffic acceleration could not be verified as disabled. Internet restrictions cannot be verified."
+msgstr "未能验证流量加速已停用。无法验证互联网访问限制。"
+
+msgid "WiFi network status is unavailable."
+msgstr "WiFi 网络状态不可用。"
+
+msgid "None of the selected WiFi networks are active."
+msgstr "所选 WiFi 网络均未处于活动状态。"
+
+msgid "No WiFi network is selected."
+msgstr "未选择 WiFi 网络。"
+
+msgid "Protect device"
+msgstr "保护设备"
+
+msgid "Protection pending"
+msgstr "保护待生效"
+
+msgid "Already protected"
+msgstr "已受保护"
+
+msgid "Protection"
+msgstr "保护"
+
+msgid "Device added to protected MAC addresses. Save & Apply to activate the exception."
+msgstr "设备已添加到受保护的 MAC 地址。点击“保存并应用”以启用此例外。"
+
+msgid "Unable to update protected MAC addresses."
+msgstr "无法更新受保护的 MAC 地址。"
+
+msgid "Operating mode"
+msgstr "运行模式"
+
+msgid "Live mode"
+msgstr "正式模式"
+
+msgid "Choose whether to test the settings or enforce them after applying."
+msgstr "选择应用设置后是进行测试还是执行限制。"
+
+msgid "Test mode only logs actions. Live mode enforces client limits, reconnect pauses and the selected Internet policy."
+msgstr "测试模式仅记录操作。正式模式会执行客户端数量和连接时长限制、重连冷却时间以及所选的互联网访问策略。"

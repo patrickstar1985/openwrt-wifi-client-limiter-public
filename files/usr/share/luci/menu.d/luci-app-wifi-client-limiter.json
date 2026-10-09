@@ -1,0 +1,15 @@
+{
+  "admin/services/wifi-client-limiter": {
+    "title": "WiFi Client Limiter",
+    "order": 60,
+    "action": {
+      "type": "view",
+      "path": "wifi-client-limiter"
+    },
+    "depends": {
+      "acl": [
+        "luci-app-wifi-client-limiter"
+      ]
+    }
+  }
+}

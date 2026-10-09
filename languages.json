@@ -1,0 +1,52 @@
+[
+  {
+    "po": "en",
+    "runtime": "en",
+    "label": "English"
+  },
+  {
+    "po": "de",
+    "runtime": "de",
+    "label": "Deutsch (German)"
+  },
+  {
+    "po": "zh_Hans",
+    "runtime": "zh-cn",
+    "label": "简体中文 (Simplified Chinese)"
+  },
+  {
+    "po": "ru",
+    "runtime": "ru",
+    "label": "Русский (Russian)"
+  },
+  {
+    "po": "fr",
+    "runtime": "fr",
+    "label": "Français (French)"
+  },
+  {
+    "po": "es",
+    "runtime": "es",
+    "label": "Español (Spanish)"
+  },
+  {
+    "po": "pl",
+    "runtime": "pl",
+    "label": "Polski (Polish)"
+  },
+  {
+    "po": "it",
+    "runtime": "it",
+    "label": "Italiano (Italian)"
+  },
+  {
+    "po": "pt_BR",
+    "runtime": "pt-br",
+    "label": "Português do Brasil (Brazilian Portuguese)"
+  },
+  {
+    "po": "tr",
+    "runtime": "tr",
+    "label": "Türkçe (Turkish)"
+  }
+]

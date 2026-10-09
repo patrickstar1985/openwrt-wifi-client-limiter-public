@@ -1,0 +1,13 @@
+* text=auto
+*.sh text eol=lf
+*.js text eol=lf
+*.py text eol=lf
+*.po text eol=lf
+*.pot text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.lmo binary
+*.ipk binary
+*.apk binary
+files/usr/sbin/* text eol=lf
+files/etc/init.d/* text eol=lf

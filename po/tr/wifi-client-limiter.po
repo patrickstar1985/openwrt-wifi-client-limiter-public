@@ -1,0 +1,317 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: tr\n"
+
+msgid "WiFi Client Limiter"
+msgstr "Wi-Fi İstemci Sınırlayıcı"
+
+msgid "Global limit across selected WiFi networks. Protected devices are excluded from client limits and Internet restrictions. A reconnect cooldown can delay new connections after a disconnect."
+msgstr "Seçilen WiFi ağları için ortak sınır. Korunan cihazlar istemci sınırlarından ve İnternet kısıtlamalarından muaftır. Bağlantı kesildikten sonraki bekleme süresi yeni bağlantıları geciktirebilir."
+
+msgid "Settings"
+msgstr "Ayarlar"
+
+msgid "Enabled"
+msgstr "Etkin"
+
+msgid "Test mode"
+msgstr "Test modu"
+
+msgid "Log actions only. Do not disconnect devices or change Internet access."
+msgstr "Yalnızca işlemleri günlüğe kaydet. Cihazların bağlantısını kesme veya İnternet erişimini değiştirme."
+
+msgid "Maximum number of guests"
+msgstr "Misafir cihaz sayısı üst sınırı"
+
+msgid "0 = unlimited. Disconnect only when the limit is exceeded."
+msgstr "0 = sınırsız. Bağlantılar yalnızca sınır aşıldığında kesilir."
+
+msgid "Maximum connection duration (seconds)"
+msgstr "Maksimum bağlantı süresi (saniye)"
+
+msgid "0 = unlimited. 1800 = 30 minutes."
+msgstr "0 = sınırsız. 1800 = 30 dakika."
+
+msgid "Check interval (seconds)"
+msgstr "Kontrol aralığı (saniye)"
+
+msgid "WiFi networks to manage"
+msgstr "Yönetilecek Wi-Fi ağları"
+
+msgid "Select the WiFi networks on which client limits should apply. Protected devices are excluded. No action is taken if no network is selected."
+msgstr "İstemci sınırlarının uygulanacağı Wi-Fi ağlarını seçin. Korunan cihazlar bu sınırlara tabi değildir. Hiçbir ağ seçilmezse işlem yapılmaz."
+
+msgid "Protected MAC addresses"
+msgstr "Korunan MAC adresleri"
+
+msgid "Add administrator devices, servers and other permanent devices here. Check for private MAC addresses."
+msgstr "Yönetici cihazlarını, sunucuları ve sürekli bağlı diğer cihazları buraya ekleyin. Cihazların özel MAC adresi kullanıp kullanmadığını kontrol edin."
+
+msgid "Setup wizard"
+msgstr "Kurulum sihirbazı"
+
+msgid "Start setup wizard"
+msgstr "Kurulum sihirbazını başlat"
+
+msgid "Select WiFi networks to manage"
+msgstr "Yönetilecek Wi-Fi ağlarını seçin"
+
+msgid "Choose the WiFi networks on which client limits should apply. The wizard does not change WiFi configuration."
+msgstr "İstemci sınırlarının uygulanacağı Wi-Fi ağlarını seçin. Sihirbaz Wi-Fi yapılandırmasını değiştirmez."
+
+msgid "Select at least one access point."
+msgstr "En az bir erişim noktası seçin."
+
+msgid "No access points are configured. Create a WiFi network in Network / Wireless first."
+msgstr "Yapılandırılmış erişim noktası yok. Önce Ağ / Kablosuz bölümünde bir Wi-Fi ağı oluşturun."
+
+msgid "Protect important devices"
+msgstr "Önemli cihazları koruyun"
+
+msgid "Select the connected WiFi devices that must never be disconnected. You can also enter MAC addresses manually."
+msgstr "Bağlantısı hiçbir zaman kesilmemesi gereken bağlı Wi-Fi cihazlarını seçin. MAC adreslerini elle de girebilirsiniz."
+
+msgid "Connected WiFi devices"
+msgstr "Bağlı Wi-Fi cihazları"
+
+msgid "No connected devices were found. Add protected MAC addresses manually if needed."
+msgstr "Bağlı cihaz bulunamadı. Gerekirse korunan MAC adreslerini elle ekleyin."
+
+msgid "Device discovery is unavailable. Add protected MAC addresses manually."
+msgstr "Cihaz keşfi kullanılamıyor. Korunan MAC adreslerini elle ekleyin."
+
+msgid "Refresh devices"
+msgstr "Cihaz listesini yenile"
+
+msgid "Manual MAC addresses"
+msgstr "Elle girilen MAC adresleri"
+
+msgid "Limits"
+msgstr "Sınırlar"
+
+msgid "Review setup"
+msgstr "Yapılandırmayı gözden geçirin"
+
+msgid "Save setup and apply"
+msgstr "Yapılandırmayı kaydet ve uygula"
+
+msgid "Unable to save setup."
+msgstr "Yapılandırma kaydedilemiyor."
+
+msgid "Back"
+msgstr "Geri"
+
+msgid "Next"
+msgstr "İleri"
+
+msgid "Cancel"
+msgstr "İptal"
+
+msgid "Pending changes in other settings were found. Apply or discard them before saving this setup."
+msgstr "Diğer ayarlarda bekleyen değişiklikler bulundu. Bu yapılandırmayı kaydetmeden önce bu değişiklikleri uygulayın veya geri alın."
+
+msgid "Pending changes to this limiter were found. Apply or discard them before starting the wizard."
+msgstr "Bu sınırlayıcı için bekleyen değişiklikler bulundu. Sihirbazı başlatmadan önce bu değişiklikleri uygulayın veya geri alın."
+
+msgid "No changes have been saved yet."
+msgstr "Henüz hiçbir değişiklik kaydedilmedi."
+
+msgid "Reconnect cooldown (seconds)"
+msgstr "Yeniden bağlanma bekleme süresi (saniye)"
+
+msgid "0 = no pause. After a disconnect, block automatic and manual reconnections on all selected WiFi networks for this duration."
+msgstr "0 = bekleme yok. Bağlantısı kesilen cihazın, seçilen tüm Wi-Fi ağlarına otomatik veya elle yeniden bağlanması bu süre boyunca engellenir."
+
+msgid "Reconnect protection window (seconds)"
+msgstr "Yeniden bağlanma koruma süresi (saniye)"
+
+msgid "0 = disabled. For this long after a disconnect, returning devices may rejoin only if guest slots are free and the reconnect cooldown has ended."
+msgstr "0 = devre dışı. Bağlantı kesildikten sonra bu süre boyunca cihazlar, yalnızca misafir cihazlar için boş yer varsa ve yeniden bağlanma bekleme süresi sona ermişse tekrar bağlanabilir."
+
+msgid "Allow guests to access the Internet"
+msgstr "Misafirlerin İnternet erişimine izin ver"
+
+msgid "When disabled, guests can reach the local WiFi network only. Protected devices keep their existing Internet access. Test mode logs the policy without applying it."
+msgstr "Devre dışı bırakıldığında misafirler yalnızca yerel WiFi ağına erişebilir. Korunan cihazlar mevcut İnternet erişimlerini korur. Test modu, politikayı uygulamadan günlüğe kaydeder."
+
+msgid "Internet policy status"
+msgstr "İnternet politikası durumu"
+
+msgid "Guests may access the Internet under the existing firewall policy."
+msgstr "Misafirler mevcut güvenlik duvarı politikasına göre İnternete erişebilir."
+
+msgid "Internet access is blocked for guests. Protected devices keep their existing Internet access."
+msgstr "Misafirlerin İnternet erişimi engellenmiştir. Korunan cihazlar mevcut İnternet erişimlerini korur."
+
+msgid "Test mode. The Internet policy is logged without applying it."
+msgstr "Test modu. İnternet politikası uygulanmadan günlüğe kaydedilir."
+
+msgid "The Internet policy is inactive."
+msgstr "İnternet politikası etkin değil."
+
+msgid "The Internet policy could not be applied. Check the system log."
+msgstr "İnternet politikası uygulanamadı. Sistem günlüğünü kontrol edin."
+
+msgid "Internet policy status is unavailable."
+msgstr "İnternet politikası durumu alınamıyor."
+
+msgid "Allowed"
+msgstr "İzin verildi"
+
+msgid "Blocked"
+msgstr "Engellendi"
+
+msgid "Connected devices"
+msgstr "Bağlı cihazlar"
+
+msgid "Device"
+msgstr "Cihaz"
+
+msgid "MAC address"
+msgstr "MAC adresi"
+
+msgid "WiFi network"
+msgstr "WiFi ağı"
+
+msgid "Internet policy"
+msgstr "İnternet erişim ilkesi"
+
+msgid "Refresh status"
+msgstr "Durumu yenile"
+
+msgid "Device names may be unavailable. Permissions describe the limiter policy, not whether the Internet is reachable. Unsaved settings are not included."
+msgstr "Cihaz adları kullanılamayabilir. İzinler, İnternetin gerçekten erişilebilir olup olmadığını değil, sınırlayıcının ilkesini gösterir. Kaydedilmemiş ayarlar dahil değildir."
+
+msgid "No connected WiFi devices were found."
+msgstr "Bağlı WiFi cihazı bulunamadı."
+
+msgid "Connected device information is unavailable."
+msgstr "Bağlı cihaz bilgileri kullanılamıyor."
+
+msgid "Some WiFi devices could not be queried. The list may be incomplete."
+msgstr "Bazı WiFi cihazları sorgulanamadı. Liste eksik olabilir."
+
+msgid "Unknown device"
+msgstr "Bilinmeyen cihaz"
+
+msgid "Allowed under existing firewall policy"
+msgstr "Mevcut güvenlik duvarı ilkesine göre izin veriliyor"
+
+msgid "Blocked (local network only)"
+msgstr "Engellendi (yalnızca yerel ağ)"
+
+msgid "Protected device (existing firewall policy)"
+msgstr "Korunan cihaz (mevcut güvenlik duvarı ilkesi)"
+
+msgid "Not managed by this limiter"
+msgstr "Bu sınırlayıcı tarafından yönetilmiyor"
+
+msgid "Test mode (not enforced)"
+msgstr "Test modu (uygulanmıyor)"
+
+msgid "Not enforced"
+msgstr "Uygulanmıyor"
+
+msgid "Unknown"
+msgstr "Bilinmiyor"
+
+msgid "The limiter service is not running. Internet restrictions could not be verified."
+msgstr "Sınırlayıcı hizmeti çalışmıyor. İnternet erişim kısıtlamaları doğrulanamadı."
+
+msgid "The limiter service is starting. Internet restrictions have not been verified yet."
+msgstr "Sınırlayıcı hizmeti başlatılıyor. İnternet erişim kısıtlamaları henüz doğrulanmadı."
+
+msgid "The limiter service reported an error. Internet restrictions could not be verified."
+msgstr "Sınırlayıcı hizmeti bir hata bildirdi. İnternet erişim kısıtlamaları doğrulanamadı."
+
+msgid "Diagnostic code"
+msgstr "Tanılama kodu"
+
+msgid "Diagnostic details"
+msgstr "Tanılama ayrıntıları"
+
+msgid "nftables is missing."
+msgstr "nftables eksik."
+
+msgid "The native OpenWrt firewall backend is unavailable."
+msgstr "OpenWrt’nin yerel güvenlik duvarı altyapısı kullanılamıyor."
+
+msgid "A required limiter component is missing."
+msgstr "Gerekli bir sınırlayıcı bileşeni eksik."
+
+msgid "The MTK WiFi driver could not be read."
+msgstr "MTK WiFi sürücüsü okunamadı."
+
+msgid "This MTK WiFi driver is not supported."
+msgstr "Bu MTK WiFi sürücüsü desteklenmiyor."
+
+msgid "This MTK WiFi profile is not supported."
+msgstr "Bu MTK WiFi profili desteklenmiyor."
+
+msgid "MultiAP steering conflicts with reconnect protection."
+msgstr "MultiAP bağlantı yönlendirmesi, yeniden bağlanma korumasıyla çakışıyor."
+
+msgid "Required MTK WiFi tools or kernel log access are unavailable."
+msgstr "Gerekli MTK WiFi araçları veya çekirdek günlüğüne erişim kullanılamıyor."
+
+msgid "The saved limiter configuration is invalid."
+msgstr "Kaydedilmiş sınırlayıcı yapılandırması geçersiz."
+
+msgid "The WiFi driver check failed."
+msgstr "WiFi sürücüsü denetimi başarısız oldu."
+
+msgid "Another limiter worker is already running."
+msgstr "Başka bir sınırlayıcı işlemi zaten çalışıyor."
+
+msgid "Previous limiter rules could not be fully removed."
+msgstr "Önceki sınırlayıcı kuralları tamamen kaldırılamadı."
+
+msgid "The Internet rules could not be verified."
+msgstr "İnternet erişim kuralları doğrulanamadı."
+
+msgid "The active Internet rules do not match the saved settings."
+msgstr "Etkin İnternet erişim kuralları kaydedilmiş ayarlarla eşleşmiyor."
+
+msgid "Traffic acceleration could not be verified as disabled. Internet restrictions cannot be verified."
+msgstr "Trafik hızlandırmasının devre dışı olduğu doğrulanamadı. İnternet erişim kısıtlamaları doğrulanamıyor."
+
+msgid "WiFi network status is unavailable."
+msgstr "WiFi ağlarının durumu kullanılamıyor."
+
+msgid "None of the selected WiFi networks are active."
+msgstr "Seçilen WiFi ağlarından hiçbiri etkin değil."
+
+msgid "No WiFi network is selected."
+msgstr "Hiçbir WiFi ağı seçilmedi."
+
+msgid "Protect device"
+msgstr "Cihazı koru"
+
+msgid "Protection pending"
+msgstr "Koruma uygulanmayı bekliyor"
+
+msgid "Already protected"
+msgstr "Zaten korunuyor"
+
+msgid "Protection"
+msgstr "Koruma"
+
+msgid "Device added to protected MAC addresses. Save & Apply to activate the exception."
+msgstr "Cihaz, korunan MAC adreslerine eklendi. İstisnayı etkinleştirmek için Kaydet ve Uygula seçeneğine tıklayın."
+
+msgid "Unable to update protected MAC addresses."
+msgstr "Korunan MAC adresleri güncellenemedi."
+
+msgid "Operating mode"
+msgstr "Çalışma modu"
+
+msgid "Live mode"
+msgstr "Etkin mod"
+
+msgid "Choose whether to test the settings or enforce them after applying."
+msgstr "Ayarlar uygulandıktan sonra test mi edileceğini yoksa kısıtlamaların mı uygulanacağını seçin."
+
+msgid "Test mode only logs actions. Live mode enforces client limits, reconnect pauses and the selected Internet policy."
+msgstr "Test modu yalnızca işlemleri günlüğe kaydeder. Etkin mod, istemci sınırlarını, yeniden bağlantı bekleme sürelerini ve seçilen İnternet politikasını uygular."

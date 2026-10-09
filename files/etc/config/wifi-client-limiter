@@ -1,0 +1,10 @@
+config limiter 'main'
+ option enabled '0'
+ option dry_run '1'
+ option guest_internet '1'
+ option max_clients '25'
+ option max_session '0'
+ option interval '10'
+ option reconnect_cooldown '0'
+ option reconnect_window '300'
+ # Add wifi-iface UCI section names through LuCI before enabling.

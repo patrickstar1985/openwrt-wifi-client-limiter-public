@@ -1,0 +1,95 @@
+{
+  "caption": "Screenshots rendered from the current LuCI view using example router data. Hardware integration still needs testing.",
+  "language": "de",
+  "theme": "Official LuCI Bootstrap",
+  "luciBranch": "openwrt-24.10",
+  "view": "files/www/luci-static/resources/view/wifi-client-limiter.js",
+  "viewSha256": "b145b3bcbaab139989a9fba7b44ccb2479dfd761318f11ae9df4a8535f333cc1",
+  "fixtureNetworks": [
+    "Guest WiFi",
+    "Admin WiFi"
+  ],
+  "fixtureDevices": [
+    "Administration laptop",
+    "Network server",
+    "Guest smartphone"
+  ],
+  "fixtureReconnectCooldownSeconds": 60,
+  "defaultReconnectCooldownSeconds": 0,
+  "fixtureReconnectProtectionWindowSeconds": 300,
+  "freshConfigReconnectProtectionWindowSeconds": 300,
+  "missingOptionReconnectProtectionWindowSeconds": 0,
+  "fixtureGuestInternet": false,
+  "missingOptionGuestInternet": true,
+  "fixtureInternetPolicyStatus": "blocked",
+  "fixtureLiveDevicePermissions": [
+    "unmanaged",
+    "exempt",
+    "blocked"
+  ],
+  "fixtureStationDiscoveryRpc": "wifi-client-limiter.clients",
+  "fixtureOperatingMode": "live",
+  "checkedOperatingModeRoundTrip": [
+    "live",
+    "test",
+    "live"
+  ],
+  "checkedDirectProtection": {
+    "writesRouterState": false,
+    "preservesUnsavedLimit": true,
+    "persistsAcrossPolling": true,
+    "deduplicates": true,
+    "requiresApply": true
+  },
+  "screenshots": {
+    "settings-de.png": {
+      "sha256": "a2ae54674337a870426ffc78ed49798f6c43ab2bdfc5f7e0608c5bd7628edc49",
+      "width": 940,
+      "height": 1346
+    },
+    "wizard-devices-de.png": {
+      "sha256": "5776bf848cd7c9a83861d954efbc33dd3b9e57766c06bd8af24461bf43e4dd4a",
+      "width": 940,
+      "height": 372
+    },
+    "wizard-review-de.png": {
+      "sha256": "2655e63f3c42070f30b33197b40f1eb0753c4e67443caa9af60384cf007ec704",
+      "width": 940,
+      "height": 665
+    }
+  },
+  "sourceAssets": {
+    "resources/cbi.js": {
+      "url": "https://raw.githubusercontent.com/openwrt/luci/openwrt-24.10/modules/luci-base/htdocs/luci-static/resources/cbi.js",
+      "sha256": "528e0292e8dfc3736f9bee9f70682db088eef224b6ab0351743901696cad7f61"
+    },
+    "resources/luci.js": {
+      "url": "https://raw.githubusercontent.com/openwrt/luci/openwrt-24.10/modules/luci-base/htdocs/luci-static/resources/luci.js",
+      "sha256": "34dda8cfd9f1df8cd957a61aaedfbeb472413528b576c9b69bb31ad12d9304d7"
+    },
+    "resources/form.js": {
+      "url": "https://raw.githubusercontent.com/openwrt/luci/openwrt-24.10/modules/luci-base/htdocs/luci-static/resources/form.js",
+      "sha256": "78015397cb284fdc0bd9d0c214fe85e24ddb286dd42cc51f86e854b5150556f0"
+    },
+    "resources/ui.js": {
+      "url": "https://raw.githubusercontent.com/openwrt/luci/openwrt-24.10/modules/luci-base/htdocs/luci-static/resources/ui.js",
+      "sha256": "50a9e92586a6fc0f5793f586a7082dbf27b027e00e5e25b30e262d8480665977"
+    },
+    "resources/validation.js": {
+      "url": "https://raw.githubusercontent.com/openwrt/luci/openwrt-24.10/modules/luci-base/htdocs/luci-static/resources/validation.js",
+      "sha256": "f3d7d34ed08b5b7104f74075f28e2d222395ec3cd471a9a0d2acdaa4c6dd015c"
+    },
+    "bootstrap/cascade.css": {
+      "url": "https://raw.githubusercontent.com/openwrt/luci/openwrt-24.10/themes/luci-theme-bootstrap/htdocs/luci-static/bootstrap/cascade.css",
+      "sha256": "571e39904b7a527efb973206f1c2e158817ad82b4cd29de48aa68dbbf75a2feb"
+    },
+    "bootstrap/mobile.css": {
+      "url": "https://raw.githubusercontent.com/openwrt/luci/openwrt-24.10/themes/luci-theme-bootstrap/htdocs/luci-static/bootstrap/mobile.css",
+      "sha256": "38ee84280a0a7e928b2a1da8bf78a1de33f98b4ba8f65be96850ac65e1bc89cf"
+    },
+    "de/base.po": {
+      "url": "https://raw.githubusercontent.com/openwrt/luci/openwrt-24.10/modules/luci-base/po/de/base.po",
+      "sha256": "3e78dd80ff272083bc5033379f137b377c2784c15bc58f3f9eafd13c5cdcd7fe"
+    }
+  }
+}

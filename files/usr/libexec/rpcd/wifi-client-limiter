@@ -1,0 +1,473 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+# Read-only rpcd exec plugin. Configuration remains protected by UCI ACLs.
+rpc_fw3_safe() {
+ local tool data modules="${INTERNET_MODULE_ROOT:-/sys/module}"
+ [ -d "$modules" ] && [ -r "$modules" ] && [ -x "$modules" ] || return 1
+ for tool in iptables-save ip6tables-save; do
+  data="$("$tool" -t filter 2>/dev/null)" || return 1
+  printf '%s\n' "$data" | grep -q '^\*filter$' &&
+  printf '%s\n' "$data" | grep -q '^:FORWARD ' || return 1
+  if printf '%s\n' "$data" | grep -Eq -- '(^|[[:space:]])(-j|--jump)[[:space:]]+FLOWOFFLOAD([[:space:]]|$)'; then return 1; fi
+ done
+ [ ! -d "$modules/xt_FLOWOFFLOAD" ]
+}
+rpc_vendor_safe() {
+ local helper="${INTERNET_VENDOR_HELPER:-/usr/share/wifi-client-limiter/vendor-acceleration.sh}"
+ [ -r "$helper" ] || return 1
+ . "$helper" || return 1
+ command -v internet_vendor_inactive >/dev/null 2>&1 || return 1
+ internet_vendor_inactive
+}
+# Parse committed UCI text without sourcing it or loading LuCI's saved deltas.
+# Only validated policy fields are used. Quoting is decoded as data, never eval.
+rpc_config_records() {
+ awk '
+ function tokens(line, out,    i,c,q,n,v,started) {
+  n=0; v=""; q=""; started=0
+  for(i=1;i<=length(line);i++) {
+   c=substr(line,i,1)
+   if(q!="") {
+    if(c==q) q=""
+    else if(c=="\\" && q=="\"") { i++; v=v substr(line,i,1) }
+    else v=v c
+    started=1; continue
+   }
+   if(c=="#") break
+   if(c=="\"" || c==sprintf("%c",39)) { q=c; started=1; continue }
+   if(c=="\\") { i++; if(i>length(line)) return -1; v=v substr(line,i,1); started=1; continue }
+   if(c ~ /[[:space:]]/) { if(started) { out[++n]=v; v=""; started=0 }; continue }
+   v=v c; started=1
+  }
+  if(q!="") return -1
+  if(started) out[++n]=v
+  return n
+ }
+ {
+  delete t; n=tokens($0,t); if(n<0) { bad=1; next }; if(!n) next
+  if(t[1]=="config") { main=(n==3 && t[2]=="limiter" && t[3]=="main"); if(main) found++; next }
+  if(!main) next
+  if((t[1]=="option" || t[1]=="list") && n==3) {
+   k=t[2]; v=t[3]
+   if(k=="enabled" || k=="dry_run" || k=="guest_internet") {
+    if(t[1]!="option") {bad=1; next}
+    if(v ~ /^(1|true|yes|on|enabled)$/) v=1; else if(v ~ /^(0|false|no|off|disabled)$/) v=0; else {bad=1; next}
+    b[k]=v
+   } else if(k=="network") {
+    if(t[1]!="list") {bad=1; next}
+    if(v !~ /^[a-zA-Z0-9_][a-zA-Z0-9_.-]*$/) {bad=1; next}; networks[v]=1
+   } else if(k=="whitelist") {
+    if(t[1]!="list") {bad=1; next}
+    v=tolower(v); if(v !~ /^[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]$/) {bad=1; next}; whites[v]=1
+   }
+  } else bad=1
+ }
+ END {
+  if(bad || found!=1) exit 1
+  print "enabled " (("enabled" in b)?b["enabled"]:0)
+  print "dry_run " (("dry_run" in b)?b["dry_run"]:1)
+  print "guest_internet " (("guest_internet" in b)?b["guest_internet"]:1)
+  for(v in networks) print "network " v
+  for(v in whites) print "whitelist " v
+ }' /etc/config/wifi-client-limiter
+}
+rpc_config_load() {
+ local records key value
+ enabled=0; dry=1; guest_internet=1; networks=; white=
+ records="$(rpc_config_records)" || return 1
+ while read -r key value; do
+  case "$key" in
+   enabled) enabled="$value";; dry_run) dry="$value";; guest_internet) guest_internet="$value";;
+   network) networks="$networks $value";; whitelist) white="$white $value";;
+  esac
+ done <<EOF
+$records
+EOF
+}
+rpc_service() {
+ local pid cmd value
+ service_state=unknown; service_error=; service_detail=; service_running=0
+ if [ -r /tmp/wifi-client-limiter/service-status.json ] && json_load "$(cat /tmp/wifi-client-limiter/service-status.json)"; then
+  json_get_var service_state service_state; json_get_var service_error error
+  json_get_var service_detail detail; json_get_var pid pid
+  case "$service_state" in starting|running|error|stopped) ;; *) service_state=unknown;; esac
+  case "$pid" in ''|0|*[!0-9]*) return;; esac
+  [ -r "/proc/$pid/cmdline" ] || return
+  cmd="$(tr '\000' '\n' < "/proc/$pid/cmdline")"
+  # PID reuse or a stale lifecycle record must not imply a running worker.
+  case "$(printf '%s\n' "$cmd" | head -n 1)" in
+   /usr/sbin/wifi-client-limiter) service_running=1;;
+   /bin/sh|/bin/ash) [ "$(printf '%s\n' "$cmd" | sed -n '2p')" != /usr/sbin/wifi-client-limiter ] || service_running=1;;
+  esac
+ fi
+}
+rpc_ap_records() {
+ local helper=/usr/share/wifi-client-limiter/station-adapter.sh
+ [ -r "$helper" ] || return 1
+ . "$helper" || return 1
+ station_ap_records
+}
+# Read runtime network attachments and addresses, never route/default prefixes.
+# A stale allow-prefix cache must not describe a newly changed local network.
+rpc_prefix_value() {
+ local family="$1" address="$2" mask="$3"
+ case "$mask" in ''|*[!0-9]*) return 1;; esac
+ if [ "$family" = 4 ]; then
+  [ "$mask" -ge 1 ] && [ "$mask" -le 32 ] || return 1
+  printf '%s\n' "$address" | awk -F. -v mask="$mask" '
+   NF!=4 {exit 1}
+   {for(i=1;i<=4;i++) if($i !~ /^[0-9]+$/ || $i>255) exit 1
+    for(i=1;i<=4;i++) {n=mask-(i-1)*8; if(n<0)n=0; if(n>8)n=8; step=2^(8-n); part[i]=int($i/step)*step}
+    printf "4 %d.%d.%d.%d/%d\n",part[1],part[2],part[3],part[4],mask}'
+ else
+  [ "$mask" -ge 1 ] && [ "$mask" -le 128 ] || return 1
+  case "$address" in ''|*[!a-fA-F0-9:]*|*:::*) return 1;; esac
+  case "$address" in *:*) ;; *) return 1;; esac
+  [ "${#address}" -le 39 ] || return 1
+  printf '6 %s/%s\n' "$address" "$mask"
+ fi
+}
+rpc_address_prefixes() {
+ local array="$1" family="$2" keys key address mask
+ if json_select "$array"; then
+  json_get_keys keys
+  for key in $keys; do
+   json_select "$key" || return 1
+   json_get_var address address; json_get_var mask mask
+   rpc_prefix_value "$family" "$address" "$mask" || return 1
+   json_select ..
+  done
+  json_select ..
+ fi
+}
+rpc_current_prefixes() {
+ local data radios radio entries entry section type keys key local_keys logical attached= values address mask _json_no_warning=1
+ data="$(ubus call network.wireless status 2>/dev/null)" || return 1
+ json_load "$data" || return 1
+ json_get_keys radios
+ for radio in $radios; do
+  json_select "$radio" || return 1
+  if json_select interfaces; then
+   json_get_keys entries
+   for entry in $entries; do
+    json_select "$entry" || return 1; json_get_var section section
+    case " $networks " in *" $section "*)
+     json_select config || return 1
+     json_get_type type network
+     if [ "$type" = array ]; then
+      json_select network || return 1; json_get_keys keys
+      for key in $keys; do json_get_var logical "$key"; attached="$attached $logical"; done
+      json_select ..
+     elif [ "$type" = string ]; then
+      json_get_var values network; attached="$attached $values"
+     else return 1; fi
+     json_select ..;;
+    esac
+    json_select ..
+   done
+   json_select ..
+  fi
+  json_select ..
+ done
+ [ -n "$attached" ] || return 1
+ for logical in $(printf '%s\n' $attached | sort -u); do
+  case "$logical" in ''|*[!a-zA-Z0-9_.-]*) return 1;; esac
+  data="$(ubus call "network.interface.$logical" status 2>/dev/null)" || return 1
+  json_load "$data" || return 1
+  rpc_address_prefixes ipv4-address 4 || return 1
+  rpc_address_prefixes ipv6-address 6 || return 1
+  if json_select ipv6-prefix-assignment; then
+   json_get_keys keys
+   for key in $keys; do
+    json_select "$key" || return 1
+    # A delegated pool may have no local allocation on this interface. Only
+    # a missing value or a truly empty object means there is no IPv6 prefix.
+    # Never turn the parent delegated pool into a local-network exemption.
+    json_get_type type local-address
+    if [ -n "$type" ]; then
+     [ "$type" = object ] || return 1
+     json_select local-address || return 1
+     json_get_keys local_keys || return 1
+     if [ -n "$local_keys" ]; then
+      json_get_type type address
+      [ "$type" = string ] || return 1
+      json_get_type type mask
+      [ "$type" = int ] || return 1
+      json_get_var address address; json_get_var mask mask
+      rpc_prefix_value 6 "$address" "$mask" || return 1
+     fi
+     json_select ..
+    fi
+    json_select ..
+   done
+   json_select ..
+  fi
+ done
+}
+# Canonicalize the complete owned table, accepting only our generated policy.
+# Rule order matters: MAC exemptions precede VLAN/drop rules and no early
+# accept, extra chain, jump, set, or other expression may bypass the final drop.
+# -s removes changing counters; -nn keeps service and EtherType names numeric.
+# -y forces numeric hook priority, avoiding equivalent symbolic expressions.
+rpc_policy_records() {
+ awk -v mode="${1:-policy}" '
+ function ipv6(v,    a,b,x,h,n,m,i,j,out,k,bits,value,part,c) {
+  n=split(v,x,"/"); k=(n>1)?"/"x[2]:"/128"; bits=(n>1)?x[2]+0:128
+  if(bits<1 || bits>128) return "INVALID"
+  v=x[1]; n=split(v,a,"::"); if(n>2) return "INVALID"
+  m=split(a[1],b,":"); if(a[1]=="") m=0
+  j=split(a[2],x,":"); if(a[2]=="") j=0
+  for(i=1;i<=m;i++) h[i]=b[i]
+  if(n==2) for(i=0;i<8-m-j;i++) h[m+i+1]="0"
+  if(n==2) m=8-j
+  for(i=1;i<=j;i++) h[m+i]=x[i]
+  if(m+j!=8) return "INVALID"
+  for(i=1;i<=8;i++) {
+   value=0; c=tolower(h[i]); if(c !~ /^[0-9a-f]+$/ || length(c)>4) return "INVALID"
+   for(j=1;j<=length(c);j++) value=value*16+index("0123456789abcdef",substr(c,j,1))-1
+   part=bits-(i-1)*16; if(part<0) part=0; if(part>16) part=16
+   value=int(value/(2^(16-part)))*(2^(16-part))
+   out=out ((i>1)?":":"") sprintf("%x",value)
+  }
+  return out k
+ }
+ function known_set(line,    body,a,n,i,v,seen,kind) {
+  if(line ~ /^ether type \{ .* \} counter drop$/) kind="ether"
+  else if(line ~ /^ip6 daddr \{ .* \} return$/) kind="local6"
+  else return line
+  body=line; sub(/^[^{]*\{ /,"",body); sub(/ \}.*$/,"",body)
+  n=split(body,a,","); for(i=1;i<=n;i++) {v=a[i]; gsub(/^[[:space:]]+|[[:space:]]+$/,"",v); if(seen[v]++) return line}
+  if(kind=="ether" && n==3 && seen["0x8100"] && seen["0x88a8"] && seen["0x9100"]) return "ether type { 0x8100, 0x88a8, 0x9100 } counter drop"
+  if(kind=="ether" && n==2 && (seen["0x0800"] || seen["0x800"] || seen["ip"]) && (seen["0x86dd"] || seen["ip6"])) return "ether type { 0x0800, 0x86dd } counter drop"
+  if(kind=="local6" && n==3 && seen["fe80::/10"] && seen["ff01::/16"] && seen["ff02::/16"]) return "ip6 daddr { fe80::/10, ff01::/16, ff02::/16 } return"
+  # nft merges the two adjacent multicast prefixes when dumping an interval
+  # set. Accept precisely their original union, never a broader range.
+  if(kind=="local6" && n==2 && seen["fe80::/10"] && seen["ff01::-ff02:ffff:ffff:ffff:ffff:ffff:ffff:ffff"]) return "ip6 daddr { fe80::/10, ff01::/16, ff02::/16 } return"
+  return line
+ }
+ function finish() {
+  if(stage!=7 || iface=="") bad=1
+  if(seen[iface]++) bad=1
+  print "interface " iface; print "policy " iface " " rules
+  chain=""; iface=""; rules=""; stage=0
+ }
+ {
+  gsub(/^[[:space:]]+|[[:space:]]+$/,"",$0); if($0=="") next
+  if(mode=="prefixes") {
+   if(NF!=2) bad=1
+   else if($1==4) print "4 " $2
+   else if($1==6) {value=ipv6($2); if(value=="INVALID") bad=1; else print "6 " value}
+   else bad=1
+   next
+  }
+  if($0 ~ /^(add|delete) table netdev wifi_client_limiter$/) next
+  if($0=="table netdev wifi_client_limiter {") {if(table++) bad=1; next}
+  if($0 ~ /^chain ap_[0-9]+ \{$/) {if(chain!="" || !table) bad=1; chain=$2; stage=0; next}
+  if($0=="}") {if(chain!="") finish(); else {if(!table || closed++) bad=1}; next}
+  if(chain=="") {bad=1; next}
+  if($0 ~ /^type filter hook ingress device "[a-zA-Z0-9_.-]+" priority (-500|filter - 500); policy accept;$/) {
+   if(stage!=0) bad=1; split($0,a,"\""); iface=a[2]; if(length(iface)>15) bad=1; stage=1; next
+  }
+  line=$0; gsub(/[[:space:]]+/," ",line); gsub(/counter packets [0-9]+ bytes [0-9]+/,"counter",line)
+  gsub(/8021q/,"0x8100",line); gsub(/8021ad/,"0x88a8",line)
+  line=known_set(line)
+  if(line ~ /^ether saddr [0-9a-f:]+ return$/) {
+   if(stage!=1 || NF!=4) bad=1; print "whitelist " iface " " $3; rules=rules "|" line; next
+  }
+  if(line=="ether type { 0x8100, 0x88a8, 0x9100 } counter drop") {if(stage!=1) bad=1; stage=2}
+  else if(line=="ip daddr 255.255.255.255 udp sport 68 udp dport 67 return") {if(stage!=2) bad=1; stage=3}
+  else if(line=="ip daddr 224.0.0.0/24 return") {if(stage!=3) bad=1; stage=4}
+  else if(line=="ip6 daddr { fe80::/10, ff01::/16, ff02::/16 } return") {if(stage!=4) bad=1; stage=5}
+  else if(line=="ether type { 0x0800, 0x86dd } counter drop" || line=="ether type { 0x800, 0x86dd } counter drop" || line=="ether type { ip, ip6 } counter drop") {if(stage!=5) bad=1; line="ether type { 0x0800, 0x86dd } counter drop"; stage=7}
+  else if(line ~ /^ip daddr [0-9.]+(\/[0-9]+)? return$/) {if(stage!=2 || $3 ~ /\/0$/) bad=1; value=$3; if(value !~ /\//) value=value "/32"; print "prefix " iface " 4 " value; line="ip daddr " value " return"}
+  else if(line ~ /^ip6 daddr [0-9a-fA-F:]+(\/[0-9]+)? return$/) {if(stage!=2 || $3 ~ /\/0$/) bad=1; value=ipv6($3); if(value=="INVALID") bad=1; print "prefix " iface " 6 " value; line="ip6 daddr " value " return"}
+  else bad=1
+  rules=rules "|" line
+ }
+ END {if(mode=="prefixes") {if(bad) exit 1; exit 0}; if(bad || !table || !closed || chain!="") exit 1}
+ '
+}
+rpc_rules_verify() {
+ local live expected current records iface section driver actual_whites wanted_whites prefixes actual_prefixes
+ if nft list table inet wifi_client_limiter >/dev/null 2>&1; then reason=cleanup_pending; return 1; fi
+ live="$(nft -s -nn -y list table netdev wifi_client_limiter 2>/dev/null)" || { reason=rules_missing; return 1; }
+ [ -r /tmp/wifi-client-limiter/internet-policy-applied ] || { reason=rules_unverified; return 1; }
+ expected="$(rpc_policy_records < /tmp/wifi-client-limiter/internet-policy-applied)" || { reason=rules_unverified; return 1; }
+ live="$(printf '%s\n' "$live" | rpc_policy_records)" || { reason=rules_unverified; return 1; }
+ [ "$live" = "$expected" ] || { reason=rules_unverified; return 1; }
+ records="$(rpc_ap_records)" || { reason=network_status_failed; return 1; }
+ current=; verified_bindings=
+ while read -r iface section driver; do
+  case " $networks " in *" $section "*) current="$current$iface\n"; verified_bindings="$verified_bindings $iface:$section";; esac
+ done <<EOF
+$records
+EOF
+ current="$(printf '%b' "$current" | sort -u)"
+ [ -n "$current" ] || { reason=no_active_networks; return 1; }
+ interfaces="$(printf '%s\n' "$live" | awk '$1=="interface" {print $2}' | sort -u)"
+ [ "$current" = "$interfaces" ] || { reason=config_mismatch; return 1; }
+ prefixes="$(rpc_current_prefixes)" || { reason=network_status_failed; return 1; }
+ prefixes="$(printf '%s\n' "$prefixes" | rpc_policy_records prefixes)" || { reason=network_status_failed; return 1; }
+ prefixes="$(printf '%s\n' "$prefixes" | sort -u)"
+ [ -n "$prefixes" ] || { reason=network_status_failed; return 1; }
+ wanted_whites="$(for iface in $white; do printf '%s\n' "$iface"; done | sort -u)"
+ for iface in $interfaces; do
+  actual_prefixes="$(printf '%s\n' "$live" | awk -v iface="$iface" '$1=="prefix" && $2==iface {print $3 " " $4}' | sort -u)"
+  [ "$actual_prefixes" = "$prefixes" ] || { reason=config_mismatch; return 1; }
+  actual_whites="$(printf '%s\n' "$live" | awk -v iface="$iface" '$1=="whitelist" && $2==iface {print $3}' | sort -u)"
+  [ "$actual_whites" = "$wanted_whites" ] || { reason=config_mismatch; return 1; }
+ done
+}
+rpc_observe() {
+ local value recorded=inactive
+ state=inactive; active=0; backend=unknown; family=netdev; reason=inactive; error=; interfaces=
+ command -v fw4 >/dev/null 2>&1 && backend=fw4
+ if [ "$backend" = unknown ] && command -v fw3 >/dev/null 2>&1; then backend=fw3; fi
+ rpc_service
+ if ! rpc_config_load; then state=error; reason=config_invalid; error=config_invalid; return; fi
+ if [ -r /tmp/wifi-client-limiter/internet-status.json ]; then
+  if json_load "$(cat /tmp/wifi-client-limiter/internet-status.json)"; then
+   json_get_var recorded internet_state; json_get_var error error
+  else recorded=error; error=status_invalid; fi
+ fi
+ # Even an allowed/disabled/test setting must not imply allowance if old owned
+ # rules remain. This occurs briefly during apply or after failed cleanup.
+ if [ "$enabled" != 1 ] || [ "$dry" = 1 ] || [ "$guest_internet" != 0 ] || [ -z "$networks" ]; then
+  if nft list table netdev wifi_client_limiter >/dev/null 2>&1 || nft list table inet wifi_client_limiter >/dev/null 2>&1; then
+   state=error; reason=cleanup_pending; error=cleanup_pending; return
+  fi
+  if [ "$enabled" != 1 ]; then reason=disabled
+  elif [ "$dry" = 1 ]; then state=test; reason=test_mode
+  elif [ "$guest_internet" != 0 ]; then state=allowed; reason=guest_internet_allowed
+  else reason=no_networks; fi
+  return
+ fi
+ if [ "$service_running" != 1 ]; then
+  state=inactive; reason=service_stopped
+  if nft list table netdev wifi_client_limiter >/dev/null 2>&1 || nft list table inet wifi_client_limiter >/dev/null 2>&1; then state=error; fi
+  if [ "$service_state" = error ]; then state=error; reason=service_error; error="$service_error"; fi
+  return
+ fi
+ if [ "$service_state" = error ]; then state=error; reason=service_error; error="$service_error"; return; fi
+ if [ "$recorded" = error ]; then state=error; reason=policy_error; [ -n "$error" ] || error=status_invalid; return; fi
+ case "$backend" in fw4|fw3) ;; *) state=error; reason=firewall_backend_required; error="$reason"; return;; esac
+ if ! rpc_rules_verify; then state=error; error="$reason"; return; fi
+ if ! rpc_vendor_safe; then state=error; reason=vendor_acceleration_active; error="$reason"; return; fi
+ if [ "$backend" = fw4 ]; then
+  if ! nft list table inet fw4 >/dev/null 2>&1 || nft list flowtable inet fw4 ft >/dev/null 2>&1; then
+   state=error; reason=offload_active; error="$reason"; return
+  fi
+ elif ! rpc_fw3_safe; then state=error; reason=offload_active; error="$reason"; return; fi
+ state=blocked; active=1; reason=policy_verified; error=
+}
+rpc_add_status() {
+ json_add_string internet_state "$state"
+ json_add_boolean active "$active"
+ json_add_string firewall_backend "$backend"
+ json_add_string nft_family "$family"
+ json_add_string reason "$reason"
+ json_add_string error "$error"
+ json_add_boolean enabled "$enabled"
+ json_add_boolean dry_run "$dry"
+ json_add_boolean guest_internet "$guest_internet"
+ json_add_boolean service_running "$service_running"
+ json_add_string service_state "$service_state"
+ json_add_string service_error "$service_error"
+ json_add_string service_detail "$service_detail"
+}
+# Host hints are optional display data. Decode in a subshell so their jshn
+# variables cannot replace the client response currently being assembled.
+# Stock jshn warns on stdout for missing json_select targets; an optional name
+# lookup must never turn an otherwise valid RPC response into invalid JSON.
+rpc_hint_name() (
+ local target="$1" data="$2" keys= key candidate type value= _json_no_warning=1
+ [ -n "$data" ] && json_load "$data" 2>/dev/null || return 0
+ json_get_keys keys
+ # Filter the sanitized keys together, without spawning a process for every
+ # unrelated DHCP/neighbor hint on a busy router.
+ keys="$(printf '%s\n' $keys | awk -v target="$target" '{key=$0; gsub(/_/, ":", key); if(tolower(key)==target) print $0}')"
+ for key in $keys; do
+  candidate="$(printf '%s' "$key" | tr '_' ':')"
+  # The C decoder sanitizes object keys. Verify the original colon-separated
+  # MAC key too, so a different separator cannot masquerade as this device.
+  type="$(jsonfilter -s "$data" -t "@['$candidate']" 2>/dev/null)" || continue
+  [ "$type" = object ] && json_select "$key" || continue
+  json_get_type type name
+  [ "$type" != string ] || json_get_var value name
+  if [ -z "$value" ]; then
+   json_get_type type hostname
+   [ "$type" != string ] || json_get_var value hostname
+  fi
+  printf '%s' "$value"
+  return 0
+ done
+ return 0
+)
+rpc_clients() {
+ local data keys key mac iface section hostname ssid hints rows= row unavailable=0 managed protected permission device_reason value _json_no_warning=1
+ local helper=/usr/share/wifi-client-limiter/station-adapter.sh
+ if [ -x "$helper" ]; then data="$("$helper" clients)"; else data=; fi
+ if [ -z "$data" ] || ! json_load "$data"; then unavailable=1
+ else
+  json_get_var value unavailable; case "$value" in 1|true) unavailable=1;; esac
+  if json_select clients; then
+   json_get_keys keys
+   for key in $keys; do
+    json_select "$key" || continue
+    json_get_var mac mac; json_get_var iface ifname; json_get_var section section
+    json_select ..
+    # Discovery validates identifiers, nevertheless reject malformed RPC data.
+    printf '%s\n' "$mac" | grep -Eq '^([0-9a-f]{2}:){5}[0-9a-f]{2}$' || { unavailable=1; continue; }
+    case "$iface" in ''|*[!a-zA-Z0-9_.-]*) unavailable=1; continue;; esac
+    case "$section" in ''|*[!a-zA-Z0-9_.-]*) unavailable=1; continue;; esac
+    [ "${#iface}" -le 15 ] || { unavailable=1; continue; }
+    rows="$rows$mac $iface $section\n"
+   done
+  else unavailable=1; fi
+ fi
+ # Obtain a readonly host hint map once, with no caller-supplied arguments.
+ hints="$(ubus call luci-rpc getHostHints 2>/dev/null)"
+ json_init; rpc_add_status
+ json_add_boolean unavailable "$unavailable"
+ json_add_array clients
+ while read -r mac iface section; do
+  [ -n "$mac" ] || continue
+  managed=0; protected=0; hostname=; ssid=
+  case " $networks " in *" $section "*) managed=1;; esac
+  case " $white " in *" $mac "*) protected=1;; esac
+  hostname="$(rpc_hint_name "$mac" "$hints")"
+  # An SSID is display data. UCI deltas may contain a pending rename; omit it
+  # here and let the UI map stable sections to its currently known SSIDs.
+  permission=unknown; device_reason="$reason"
+  if [ "$managed" != 1 ] && [ "$state" != error ]; then permission=unmanaged; device_reason=network_not_selected
+  elif [ "$state" = blocked ]; then
+   case " $verified_bindings " in *" $iface:$section "*) ;; *) device_reason=config_mismatch; managed=0;; esac
+   if [ "$managed" != 1 ]; then permission=unknown
+   elif [ "$protected" = 1 ]; then permission=exempt; device_reason=protected_device
+   else permission=blocked; device_reason=policy_verified; fi
+  elif [ "$state" = test ]; then permission=test; device_reason=test_mode
+  elif [ "$state" = allowed ]; then permission=allowed; device_reason=guest_internet_allowed
+  elif [ "$state" = inactive ]; then permission=not_enforced
+  fi
+  json_add_object ""
+  json_add_string mac "$mac"; json_add_string ifname "$iface"; json_add_string section "$section"
+  json_add_string hostname "$hostname"; json_add_string ssid "$ssid"
+  json_add_boolean managed "$managed"; json_add_boolean protected "$protected"
+  json_add_string internet_permission "$permission"; json_add_string internet_reason "$device_reason"
+  json_close_object
+ done <<EOF
+$(printf '%b' "$rows")
+EOF
+ json_close_array; json_dump
+}
+case "${1:-}" in
+ list) printf '%s\n' '{"status":{},"clients":{}}';;
+ call)
+  case "${2:-}" in status|clients) ;; *) exit 1;; esac
+  . /usr/share/libubox/jshn.sh
+  rpc_observe
+  if [ "$2" = clients ]; then rpc_clients
+  else json_init; rpc_add_status; json_dump; fi
+  ;;
+ *) exit 1;;
+esac
